@@ -2,13 +2,18 @@
 the bot starts running from here!
 """
 
-from src.commands.utilities import *
+from src.commands import (
+    utilities,
+    moderation
+)
 
 from src.command_handler import handler
 from src.data import *
 from src.util import *
 
 from dotenv import load_dotenv
+import os
+import discord
 
 
 class Toxic(discord.Client):
@@ -52,5 +57,6 @@ class Toxic(discord.Client):
 load_dotenv()
 
 # login
-client = Toxic()
+intents = discord.Intents.all()
+client = Toxic(intents=intents)
 client.run(os.getenv('TOKEN'))

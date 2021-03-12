@@ -4,6 +4,8 @@ some utility functions to organise and simplify the code
 
 import json
 import discord
+import datetime
+import re
 
 
 def parse_int(s: str):
@@ -14,6 +16,8 @@ def parse_int(s: str):
     :return: int or None
     """
 
+    if not s.isnumeric():
+        return None
     try:
         return int(s)
     except ValueError:
@@ -32,6 +36,45 @@ def parse_bool(s: str):
         return False
     elif s.lower() in ["on", "true", "yes"]:
         return True
+
+    return None
+
+
+def parse_time(s: str):
+    """
+    returns a timedelta if convertible, None otherwise
+
+    :param s: str
+    :return: timedelta or None
+    """
+
+    regex = re.compile(r'((?P<hours>\d+?)h)?((?P<minutes>\d+?)m)?((?P<seconds>\d+?)s)?')
+    parts = regex.match(s.lower())
+    if not parts:
+        return None
+    parts = parts.groupdict()
+    time_params = {}
+    for (name, param) in parts.items():
+        if param:
+            time_params[name] = int(param)
+    return datetime.timedelta(**time_params)
+
+
+def parse_member(guild: discord.Guild, user_id: str):
+    """
+    returns a Member if found one in guild using user_id, None otherwise
+
+    :param guild: Guild
+    :param user_id: str
+    :return: Member or None
+    """
+
+    if not parse_int(user_id):
+        return None
+
+    for m in guild.members:
+        if m.id == parse_int(user_id):
+            return m
 
     return None
 
@@ -76,7 +119,8 @@ def guild_json_setup(guild: discord.Guild):
             "perm_ids": {
                 "owner": [],
                 "mod": [],
-                "user": []
+                "user": [],
+                "muted": None
             },
             "disabled_cmds": [],
             "bot_channels": [],
@@ -125,6 +169,14 @@ async def dm_input(init_msg: discord.Message, ask_str: str, client: discord.Clie
 
 
 def validate_role_id(guild: discord.Guild, role_id: str):
+    """
+    validates a role ID
+
+    :param guild: Guild
+    :param role_id: str
+    :return: bool
+    """
+
     parsed = parse_int(role_id)
     if not parsed or not guild.get_role(parsed):
         return False

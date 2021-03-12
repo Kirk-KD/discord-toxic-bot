@@ -10,12 +10,15 @@ from src.data import *
 @handler.add(["testing"], perm=EVERYONE)
 async def test(message, args, client):
     """a simple testing command that serves no purpose"""
+
     await message.reply("Im working alright lmao **| args={} | client={}**".format(args, client))
+    print(args)
 
 
 @handler.add(["delete"], perm=OWNERS)
 async def clear(message, args, client):
     """deletes n amount of messages"""
+
     num = parse_int(args[0])
     if len(args) == 0 or num is None:
         await message.reply("Dude u need to tell me how many messages to delete lol")
@@ -40,6 +43,7 @@ async def clear(message, args, client):
 @handler.add(["slow", "sm"], perm=OWNERS)
 async def slowmode(message, args, client):
     """sets slowmode of a channel"""
+
     if len(args) == 0 or not (parse_int(args[0]) or parse_bool(args[0]) is False):
         await message.reply(
             "Ayo gotta tell me how long in seconds you want the slowmode to be or \"off\" to turn it off"
@@ -65,6 +69,7 @@ async def slowmode(message, args, client):
 @handler.add(["init", "initialise"], perm=OWNERS)
 async def setup(message, args, client):
     """setup command! setup process will be in the owner's DM"""
+
     if guilds_data[str(message.author.guild.id)]["initialised"]:
         await message.reply("yo your server was already initialised lol")
         return
@@ -78,7 +83,9 @@ async def setup(message, args, client):
         )
 
     async def get_ids(msg):
-        reply = (await dm_input(message, msg, client)).strip()
+        reply = (await dm_input(
+            message, msg, client
+        )).strip()
         ids = reply.split()
 
         for i in range(len(ids)):
@@ -90,7 +97,7 @@ async def setup(message, args, client):
 
         return ids
 
-    # get role IDs for owners --------------------------------
+    # get role IDs for owners
     owner_ids = await get_ids(
         "Let's get started then! First we need to set up some roles for Owners, Mods, and Users.\n "
         "What are the roles for the **owners**? Paste their role ID(s) here and separate them with spaces\n"
@@ -99,7 +106,7 @@ async def setup(message, args, client):
     if not owner_ids:
         return
 
-    # get role IDs for mods ----------------------------------
+    # get role IDs for mods
     mod_ids = await get_ids(
         "Okok and what are the roles for the **mods**? Paste their role ID(s) here and separate them with spaces\n"
         "(they are the ones that can use mute, warn and use every other commands except for the owner ones)"
@@ -107,7 +114,7 @@ async def setup(message, args, client):
     if not mod_ids:
         return
 
-    # get role IDs for users ---------------------------------
+    # get role IDs for users
     user_ids = await get_ids(
         "Noted. Now what are the roles for the **users**? Paste their role ID(s) here and separate them with spaces\n"
         "(they are the ones that have no power, but can use all other bot commands)"
@@ -115,15 +122,25 @@ async def setup(message, args, client):
     if not user_ids:
         return
 
-    # save settings ------------------------------------------
+    # get muted role ID
+    mute_id = parse_int((await dm_input(
+        message, "Alright. Now, there are always spammers, so what is the **muted** role ID?", client
+    )).strip().split()[0])
+
+    if not mute_id:
+        await message.author.send(
+            "The role ID you provided is not found or invalid ¯\\_(ツ)_/¯\n"
+            "Now you have to restart LMAO. Not sorry, your fault."
+        )
+        return
+
+    # save settings
     role_ids = guilds_data[str(message.author.guild.id)]["settings"]["perm_ids"]
     role_ids["owner"] = owner_ids
     role_ids["mod"] = mod_ids
     role_ids["user"] = user_ids
+    role_ids["muted"] = mute_id
     guilds_data[str(message.author.guild.id)]["initialised"] = True
     update_guilds_data()
 
     await message.author.send("**Setup complete!** You can now enjoy making me serve you like a slave. YAY!")
-
-
-# TODO: ADD BAN, KICK, WARN
