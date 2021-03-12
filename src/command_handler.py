@@ -1,14 +1,18 @@
-import discord
+from src.command import Command
+from src.perms import *
 
 
 class CommandHandler:
     def __init__(self):
         self.commands = {}
 
-    def add(self, aliases: list=[]):
+    def add(self, aliases=None, perm=0):
+        if aliases is None:
+            aliases = []
+
         def inner(command):
             for name in aliases + [command.__name__]:
-                self.commands[name] = command
+                self.commands[name] = Command(command, perm)
             return command
 
         return inner
@@ -19,4 +23,10 @@ class CommandHandler:
         name = args.pop(0).lower()
 
         if name in self.commands.keys():
-            await self.commands[name](message, args)
+            if perm_check(message.author, self.commands[name].perm):
+                await self.commands[name].call(message, args)
+            else:
+                await message.reply("Whoa hold on you don't have permission to use that! Begone, peasant!")
+
+
+handler = CommandHandler()

@@ -2,7 +2,9 @@ import discord
 import os
 from dotenv import load_dotenv
 
-from src.commands import handler
+from src.commands.utilities import *
+
+from src.command_handler import handler
 
 load_dotenv()
 client = discord.Client()
@@ -23,5 +25,3 @@ async def on_message(message: discord.Message):
         await handler.handle(message)
 
 client.run(os.getenv('TOKEN'))
-
-# change
