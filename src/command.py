@@ -1,6 +1,11 @@
+"""
+Command object
+"""
+
+
 class Command:
     """
-    A command object that will be store inside a CommandHandler
+    A command object that will be stored inside a CommandHandler
     """
 
     def __init__(self, func, perm: int):
