@@ -23,7 +23,7 @@ class Toxic(discord.Client):
 
     async def on_ready(self):
         """
-        called when the bot is online and read
+        called when the bot is online and ready
 
         :return: None
         """
