@@ -29,10 +29,11 @@ class Toxic(discord.Client):
         """
 
         for guild in client.guilds:
-            guilds_data[str(guild.id)] = (guilds_data[str(guild.id)]
-                                          if str(guild.id) in guilds_data.keys()
-                                          else guild_json_setup(guild))
-
+            guilds_data[str(guild.id)] = (
+                guilds_data[str(guild.id)]
+                if str(guild.id) in guilds_data.keys()
+                else guild_json_setup(guild)
+            )
         update_guilds_data()
 
         print('Logged in as {}'.format(self.user))
@@ -45,7 +46,7 @@ class Toxic(discord.Client):
         :return: None
         """
 
-        if message.author.bot:
+        if message.author.bot or type(message.channel) is not discord.TextChannel:
             return
 
         msg = message.content.strip()
@@ -53,7 +54,7 @@ class Toxic(discord.Client):
             await handler.handle(message, self)
 
 
-# loads env
+# load env
 load_dotenv()
 
 # login

@@ -6,6 +6,7 @@ import json
 import discord
 import datetime
 import re
+import random
 
 
 def parse_int(s: str):
@@ -182,3 +183,11 @@ def validate_role_id(guild: discord.Guild, role_id: str):
         return False
 
     return True
+
+
+def user_mention(user_id: str or int):
+    return "<@!{}>".format(user_id)
+
+
+def format_time(time):
+    return str(time).split(".")[0]

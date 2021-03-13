@@ -6,12 +6,14 @@ from src.command_handler import handler
 from src.perms import *
 from src.data import *
 
+# TODO: ADD EMBEDS
+
 
 @handler.add(["testing"], perm=EVERYONE)
 async def test(message, args, client):
     """a simple testing command that serves no purpose"""
 
-    await message.reply("Im working alright lmao **| args={} | client={}**".format(args, client))
+    await message.reply("Im working alright lmao **| args={} | client={}**".format(args, client), mention_author=False)
     print(args)
 
 
@@ -21,11 +23,13 @@ async def clear(message, args, client):
 
     num = parse_int(args[0])
     if len(args) == 0 or num is None:
-        await message.reply("Dude u need to tell me how many messages to delete lol")
+        await message.reply("Dude u need to tell me how many messages to delete lol", mention_author=False)
         return
 
     if num <= 0:
-        await message.reply("Trying to break me huh? Try to delete {} messages yourself".format(num))
+        await message.reply(
+            "Trying to break me huh? Try to delete {} messages yourself".format(num), mention_author=False
+        )
         return
 
     deleted = await message.channel.purge(limit=num)
@@ -46,7 +50,8 @@ async def slowmode(message, args, client):
 
     if len(args) == 0 or not (parse_int(args[0]) or parse_bool(args[0]) is False):
         await message.reply(
-            "Ayo gotta tell me how long in seconds you want the slowmode to be or \"off\" to turn it off"
+            "Ayo gotta tell me how long in seconds you want the slowmode to be or \"off\" to turn it off",
+            mention_author=False
         )
         return
 
@@ -54,13 +59,15 @@ async def slowmode(message, args, client):
 
     if amount < 0:
         await message.reply(
-            "Ahh I see that you are not very familiar with time? A delay cannot be negative. You are welcome."
+            "Ahh I see that you are not very familiar with time? A delay cannot be negative. You are welcome.",
+            mention_author=False
         )
         return
 
     await message.reply(
         "Slowmode set to {} seconds. Now suffer from the slowness!".format(amount) if amount != 0
-        else ("Slowmode is now off." if message.channel.slowmode_delay != 0 else "Slowmode was already off you nerd.")
+        else ("Slowmode is now off." if message.channel.slowmode_delay != 0 else "Slowmode was already off you nerd."),
+        mention_author=False
     )
 
     message.channel.slowmode_delay = amount
@@ -71,10 +78,10 @@ async def setup(message, args, client):
     """setup command! setup process will be in the owner's DM"""
 
     if guilds_data[str(message.author.guild.id)]["initialised"]:
-        await message.reply("yo your server was already initialised lol")
+        await message.reply("yo your server was already initialised lol", mention_author=False)
         return
 
-    await message.reply("Alrighty i'll be waiting for you in your dm")
+    await message.reply("Alrighty i'll be waiting for you in your dm", mention_author=False)
 
     async def fail():
         await message.author.send(
