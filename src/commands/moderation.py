@@ -12,6 +12,8 @@ from src.data import *
 
 @handler.add(["shutup"], perm=MODS)
 async def mute(message, args, client):
+    """mutes a user"""
+
     if len(args) == 0:
         await message.reply(
             "Ummm hello??? Don't you think you need to tell me who to mute?"
