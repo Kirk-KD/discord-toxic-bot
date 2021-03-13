@@ -1,3 +1,3 @@
 # Toxic Discord Bot
 
-*This bot is still under development. Invite at your own risk.*
+*This bot is still under development. Use at your own risk.*
