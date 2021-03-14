@@ -119,9 +119,7 @@ def guild_json_setup(guild: discord.Guild):
         "settings": {
             "perm_ids": {
                 "owner": [],
-                "mod": [],
-                "user": [],
-                "muted": None
+                "mod": []
             },
             "disabled_cmds": [],
             "bot_channels": [],
@@ -148,23 +146,28 @@ def member_json_setup():
     return {
         "muted": False,
         "banned": False,
-        "infractions": 0
+        "infractions": {}
     }
 
 
-async def dm_input(init_msg: discord.Message, ask_str: str, client: discord.Client):
+async def dm_input(init_msg: discord.Message, prompt: discord.Embed or str, client: discord.Client):
     """
     wait for user input in DM after sending ask_str
 
     :param init_msg: Message
-    :param ask_str: str
+    :param prompt: Embed or str
     :param client: Client
     :return: str
     """
+
     def check(m: discord.Message):
         return m.author == init_msg.author and type(m.channel) is discord.DMChannel
 
-    await init_msg.author.send(ask_str)
+    if type(prompt) is discord.Embed:
+        await init_msg.author.send(embed=prompt)
+    else:
+        await init_msg.author.send(prompt)
+
     user_input = await client.wait_for("message", check=check)
     return user_input.content
 

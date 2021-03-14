@@ -6,6 +6,8 @@ from src.command_handler import handler
 from src.perms import *
 from src.data import *
 
+import discord
+
 # TODO: ADD EMBEDS
 
 
@@ -73,9 +75,34 @@ async def slowmode(message, args, client):
     message.channel.slowmode_delay = amount
 
 
-@handler.add(["init", "initialise"], perm=OWNERS)
+@handler.add([], perm=OWNERS)
 async def setup(message, args, client):
     """setup command! setup process will be in the owner's DM"""
+
+    async def fail(fail_msg):
+        fail_embed = discord.Embed(
+            title="Setup Failed!",
+            description="{} Gotta restart now lmao. Go back to your server and type `_setup`.".format(fail_msg),
+            color=discord.Color.red()
+        )
+        await message.author.send(embed=fail_embed)
+
+    async def get_user_input(guild_roles_, target_roles_list, msg_embed):
+        input_str = await dm_input(message, msg_embed, client)
+        input_nums = input_str.split()
+
+        if input_str.lower() == "none":
+            return True
+
+        for num in input_nums:
+            n = parse_int(num)
+            if not n or n >= len(guild_roles_):
+                await fail("Invalid option: `{}`.".format(num))
+                return False
+
+            target_roles_list.append(guild_roles_[n].id)
+
+        return True
 
     if guilds_data[str(message.author.guild.id)]["initialised"]:
         await message.reply("yo your server was already initialised lol", mention_author=False)
@@ -83,71 +110,52 @@ async def setup(message, args, client):
 
     await message.reply("Alrighty i'll be waiting for you in your dm", mention_author=False)
 
-    async def fail():
-        await message.author.send(
-            "One or more role IDs you provided is not found or invalid ¯\\_(ツ)_/¯\n"
-            "Now you have to restart LMAO. Not sorry, your fault."
-        )
+    # switch to DM
+    guild_roles = message.guild.roles
+    owner_roles = []
+    mod_roles = []
 
-    async def get_ids(msg):
-        reply = (await dm_input(
-            message, msg, client
-        )).strip()
-        ids = reply.split()
+    embed = discord.Embed(
+        title="Toxic bot setup for `{}`".format(message.guild.name),
+        description="Let's get started then!",
+        color=discord.Color.green()
+    ).set_thumbnail(url=message.guild.icon_url)
+    await message.author.send(embed=embed)
 
-        for i in range(len(ids)):
-            if not validate_role_id(message.author.guild, ids[i]):
-                await fail()
-                return None
-
-            ids[i] = parse_int(ids[i])
-
-        return ids
-
-    # get role IDs for owners
-    owner_ids = await get_ids(
-        "Let's get started then! First we need to set up some roles for Owners, Mods, and Users.\n "
-        "What are the roles for the **owners**? Paste their role ID(s) here and separate them with spaces\n"
-        "(they are the ones that can use ban, kick, slowmode, and use every other commands)"
+    embed = discord.Embed(
+        title="What are the roles for **\"owners\"**?",
+        description=("They are the ones that can use (almost) every command. "
+                     "Type their number(s) below separated by spaces! Type `none` for none."),
+        color=discord.Color.blue()
     )
-    if not owner_ids:
+    for i, r in enumerate(guild_roles):
+        embed.add_field(name=str(i), value=r.name, inline=True)
+    if not await get_user_input(guild_roles, owner_roles, embed):
         return
 
-    # get role IDs for mods
-    mod_ids = await get_ids(
-        "Okok and what are the roles for the **mods**? Paste their role ID(s) here and separate them with spaces\n"
-        "(they are the ones that can use mute, warn and use every other commands except for the owner ones)"
+    embed = discord.Embed(
+        title="What are the roles for **\"moderators\"**?",
+        description=("They are the ones that can use `warn`, `mute` and other commands "
+                     "except the owner only ones (`kick`, `slowmode`, `ban`). "
+                     "Type their number(s) below separated by spaces! Type `none` for none."),
+        color=discord.Color.blue()
     )
-    if not mod_ids:
+    for i, r in enumerate(guild_roles):
+        embed.add_field(name=str(i), value=r.name + (" `owner`" if r.id in owner_roles else ""), inline=True)
+    if not await get_user_input(guild_roles, mod_roles, embed):
         return
 
-    # get role IDs for users
-    user_ids = await get_ids(
-        "Noted. Now what are the roles for the **users**? Paste their role ID(s) here and separate them with spaces\n"
-        "(they are the ones that have no power, but can use all other bot commands)"
+    set_data("{}/settings/perm_ids/owner".format(message.guild.id), owner_roles.copy())
+    set_data("{}/settings/perm_ids/mod".format(message.guild.id), mod_roles.copy())
+    set_data("{}/initialised".format(message.guild.id), True)
+    update_data()
+
+    embed = discord.Embed(
+        title="Toxic bot setup complete!",
+        description="`Owners` {}\n`Mods` {}".format(
+            ", ".join([discord.utils.get(guild_roles, id=r).name for r in owner_roles]),
+            ", ".join([discord.utils.get(guild_roles, id=r).name for r in mod_roles])
+        ),
+        color=discord.Color.green()
     )
-    if not user_ids:
-        return
-
-    # get muted role ID
-    mute_id = parse_int((await dm_input(
-        message, "Alright. Now, there are always spammers, so what is the **muted** role ID?", client
-    )).strip().split()[0])
-
-    if not mute_id:
-        await message.author.send(
-            "The role ID you provided is not found or invalid ¯\\_(ツ)_/¯\n"
-            "Now you have to restart LMAO. Not sorry, your fault."
-        )
-        return
-
-    # save settings
-    role_ids = guilds_data[str(message.author.guild.id)]["settings"]["perm_ids"]
-    role_ids["owner"] = owner_ids
-    role_ids["mod"] = mod_ids
-    role_ids["user"] = user_ids
-    role_ids["muted"] = mute_id
-    guilds_data[str(message.author.guild.id)]["initialised"] = True
-    update_guilds_data()
-
-    await message.author.send("**Setup complete!** You can now enjoy making me serve you like a slave. YAY!")
+    await message.author.send(embed=embed)
