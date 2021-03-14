@@ -15,13 +15,22 @@ import discord
 async def test(message, args, client):
     """a simple testing command that serves no purpose"""
 
-    await message.reply("Im working alright lmao **| args={} | client={}**".format(args, client), mention_author=False)
-    print(args)
+    embed = discord.Embed(
+        title="Im working alright lmaooo",
+        color=discord.Color.green()
+    ).add_field(
+        name="Args",
+        value=str(args)
+    ).add_field(
+        name="Client",
+        value="<" + str(client).split()[-1]
+    ).set_footer(text=timestamp())
+    await message.reply(embed=embed, mention_author=False)
 
 
 @handler.add(["delete"], perm=OWNERS)
 async def clear(message, args, client):
-    """deletes n amount of messages"""
+    """deletes messages"""
 
     num = parse_int(args[0])
     if len(args) == 0 or num is None:
@@ -36,28 +45,38 @@ async def clear(message, args, client):
 
     deleted = await message.channel.purge(limit=num)
     if len(deleted) <= 3:
-        await message.channel.send(
-            "{} fine, deleted. Its just {} messages cant you do it yourself you lazy bum??".format(
+        embed = discord.Embed(
+            title=str(len(deleted)) + " messages deleted",
+            description="{} fine, deleted. Its just {} messages cant you do it yourself you lazy bum??".format(
                 message.author.mention, len(deleted)
-            )
-        )
+            ),
+            color=discord.Color.green()
+        ).set_footer(text=timestamp())
+        await message.channel.send(embed=embed)
         return
 
-    await message.channel.send("{} Alright, {} messages deleted.".format(message.author.mention, len(deleted)))
+    embed = discord.Embed(
+        title=str(len(deleted)) + " messages deleted",
+        description="{} Alright, {} messages deleted.".format(
+            message.author.mention, len(deleted)
+        ),
+        color=discord.Color.green()
+    ).set_footer(text=timestamp())
+    await message.channel.send(embed=embed)
 
 
 @handler.add(["slow", "sm"], perm=OWNERS)
 async def slowmode(message, args, client):
     """sets slowmode of a channel"""
 
-    if len(args) == 0 or not (parse_int(args[0]) or parse_bool(args[0]) is False):
+    if len(args) == 0 or not (parse_time(args[0]) or (parse_bool(args[0]) is False)):
         await message.reply(
-            "Ayo gotta tell me how long in seconds you want the slowmode to be or \"off\" to turn it off",
+            "Ayo gotta tell me how long you want the slowmode to be or \"off\" to turn it off",
             mention_author=False
         )
         return
 
-    amount = parse_int(args[0]) if parse_int(args[0]) is not None else 0
+    amount = int(parse_time(args[0]).seconds) if parse_time(args[0]) is not None else 0
 
     if amount < 0:
         await message.reply(
@@ -66,13 +85,25 @@ async def slowmode(message, args, client):
         )
         return
 
-    await message.reply(
-        "Slowmode set to {} seconds. Now suffer from the slowness!".format(amount) if amount != 0
-        else ("Slowmode is now off." if message.channel.slowmode_delay != 0 else "Slowmode was already off you nerd."),
-        mention_author=False
-    )
+    if amount == 0:
+        if message.channel.slowmode_delay == 0:
+            await message.reply("Slowmode was already off you nerd.", mention_author=False)
+            return
 
-    message.channel.slowmode_delay = amount
+        embed = discord.Embed(
+            title="Slowmode is now off",
+            color=discord.Color.green()
+        ).set_footer(text=timestamp())
+        await message.reply(embed=embed, mention_author=False)
+    else:
+        embed = discord.Embed(
+            title="Slowmode set to {}".format(args[0]),
+            description="Now suffer from the slowness!",
+            color=discord.Color.green()
+        ).set_footer(text=timestamp())
+        await message.reply(embed=embed, mention_author=False)
+
+    await message.channel.edit(slowmode_delay=amount)
 
 
 @handler.add([], perm=OWNERS)

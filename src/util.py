@@ -194,3 +194,7 @@ def user_mention(user_id: str or int):
 
 def format_time(time):
     return str(time).split(".")[0]
+
+
+def timestamp():
+    return format_time(datetime.datetime.now())
