@@ -34,7 +34,7 @@ class Toxic(discord.Client):
                 if str(guild.id) in guilds_data.keys()
                 else guild_json_setup(guild)
             )
-        update_guilds_data()
+        update_data()
 
         print('Logged in as {}'.format(self.user))
 
