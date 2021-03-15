@@ -19,22 +19,25 @@ class CommandHandler:
         """
 
         self.commands = {}
+        self.cmd_count = 0
 
-    def add(self, aliases=None, perm=0):
+    def add(self, aliases: list=None, perm: int=0, usage: str=""):
         """
         a decorator function that adds a command and its aliases to self.commands
 
         :param aliases: None or list<str>
         :param perm: int
+        :param usage: str
         :return: function
         """
 
         if aliases is None:
             aliases = []
+        self.cmd_count += 1
 
         def inner(command):
-            for name in aliases + [command.__name__]:
-                self.commands[name] = Command(command, perm)
+            for name in aliases + [command.__name__.strip("_")]:
+                self.commands[name] = Command(command, perm, usage)
             return command
 
         return inner

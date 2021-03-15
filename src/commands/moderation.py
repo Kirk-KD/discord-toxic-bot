@@ -9,7 +9,9 @@ from src.perms import *
 from src.data import *
 
 
-@handler.add(["shutup"], perm=MODS)
+@handler.add(
+    ["shutup"], perm=MODS, usage="mute <mention|id> <time>|\"forever\" [<reason>]"
+)
 async def mute(message, args, client):
     """mutes a user"""
 
@@ -86,7 +88,9 @@ async def mute(message, args, client):
         await member.remove_roles(muted_role)
 
 
-@handler.add(perm=MODS)
+@handler.add(
+    [], perm=MODS, usage="unmute <mention|id>"
+)
 async def unmute(message, args, client):
     if len(args) < 1:
         await message.reply("Are you gonna tell me who to unmute or not???", mention_author=False)
@@ -122,7 +126,9 @@ async def unmute(message, args, client):
     await message.reply(embed=embed, mention_author=False)
 
 
-@handler.add(perm=MODS)
+@handler.add(
+    [], perm=MODS, usage="warn <mention|id> [<reason>]"
+)
 async def warn(message, args, client):
     """warns a user"""
 
@@ -169,7 +175,9 @@ async def warn(message, args, client):
     update_data()
 
 
-@handler.add(["bye", "getlost"], perm=OWNERS)
+@handler.add(
+    ["bye", "getlost"], perm=OWNERS, usage="kick <mention|id> [reason]"
+)
 async def kick(message, args, client):
     if len(args) < 1:
         await message.reply("Who do I kick? You?", mention_author=False)
@@ -232,7 +240,9 @@ async def kick(message, args, client):
     update_data()
 
 
-@handler.add(["hammer"], perm=OWNERS)
+@handler.add(
+    ["hammer"], perm=OWNERS, usage="ban <time>|\"forever\" <mention|id> [reason]"
+)
 async def ban(message, args, client):
     if len(args) < 1:
         await message.reply("Tell me who to ban or I ban you.", mention_author=False)
@@ -319,7 +329,9 @@ async def ban(message, args, client):
         await member.unban()
 
 
-@handler.add(perm=OWNERS)
+@handler.add(
+    [], perm=OWNERS, usage="unban <id>"
+)
 async def unban(message, args, client):
     if len(args) < 1:
         await message.reply("Tell me who to unban.", mention_author=False)
