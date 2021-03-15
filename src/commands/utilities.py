@@ -146,6 +146,8 @@ async def setup(message, args, client):
     owner_roles = []
     mod_roles = []
 
+    # TODO: ASK FOR MUTED ROLE
+
     embed = discord.Embed(
         title="Toxic bot setup for `{}`".format(message.guild.name),
         description="Let's get started then!",

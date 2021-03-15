@@ -3,6 +3,7 @@ commands under category "Moderation"
 """
 
 import asyncio
+import discord
 from discord.utils import get
 
 from src.command_handler import handler
@@ -14,7 +15,55 @@ from src.data import *
 async def mute(message, args, client):
     """mutes a user"""
 
-    # TODO: IMPLEMENT
+    if len(args) < 1:
+        await message.reply(
+            "At least tell me who to mute man. "
+            "Are you just playing with me because I'm a bot?",
+            mention_author=False
+        )
+        return
+
+    if len(args) < 2:
+        await message.reply("Gotta tell me how long to mute tho.", mention_author=False)
+        return
+
+    member = parse_member(message.guild, args[0])
+    time = parse_time(args[1])
+    reason = " ".join(args[2:]) if len(args) > 2 else "None given"
+
+    if not member:
+        await message.reply("I need a valid user ID as the first argument lol.", mention_author=False)
+        return
+
+    if not time:
+        await message.reply("Dude give me a valid time (eg 2d12h30m15s) as second argument.", mention_author=False)
+        return
+
+    embed = discord.Embed(
+        title="Mute",
+        description="{} was muted for `{}`! Yeah just shutup LMAOOO".format(
+            member.mention, args[1].lower()
+        ),
+        color=discord.Color.light_gray()
+    ).add_field(
+        name="Muted until", value="`{}`".format(
+            format_time(datetime.datetime.now() + time)
+        )
+    ).add_field(
+        name="Reason", value=reason
+    )
+    await message.reply(embed=embed, mention_author=False)
+
+    # TODO: CHANGE TO ROLE BASED MUTE SYSTEM
+    set_data("{}/members/{}/muted".format(
+        message.guild.id, member.id
+    ), True)
+    get_data("{}/members/{}/infractions".format(
+        message.guild.id, member.id
+    )).append(
+        infraction_json_setup("Mute", reason, datetime.datetime.now() + time)
+    )
+    update_data()
 
 
 @handler.add(perm=MODS)
@@ -41,11 +90,11 @@ async def warn(message, args, client):
         name=warn_member.name, icon_url=warn_member.avatar_url
     ).set_footer(
         text="Warned by {} ({}) • {}".format(
-            message.author.display_name, message.author, format_time(datetime.datetime.now())
+            message.author.display_name, message.author, timestamp()
         )
     )
     await message.reply(embed=embed_msg, mention_author=False)
 
-    # TODO: IMPLEMENT INFRACTION SYSTEM
+    # TODO: INFRACTION
 
 # TODO: ADD BAN AND KICK COMMAND

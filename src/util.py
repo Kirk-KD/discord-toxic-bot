@@ -6,9 +6,9 @@ import json
 import discord
 import datetime
 import re
-import random
 
 
+# parsers
 def parse_int(s: str):
     """
     returns the number if is convertible to int, None otherwise
@@ -80,6 +80,7 @@ def parse_member(guild: discord.Guild, user_id: str):
     return None
 
 
+# json
 def read_json(file: str):
     """
     reads a JSON file and returns a dict parsed from its content
@@ -146,10 +147,28 @@ def member_json_setup():
     return {
         "muted": False,
         "banned": False,
-        "infractions": {}
+        "infractions": []
     }
 
 
+def infraction_json_setup(action: str, reason: str, time: datetime.datetime):
+    """
+    returns a json dict for an infraction in guilds.json
+
+    :param action: str
+    :param reason: str
+    :param time: datetime
+    :return: dict
+    """
+
+    return {
+        "action": action,
+        "reason": reason,
+        "time": int(time.timestamp())
+    }
+
+
+# message
 async def dm_input(init_msg: discord.Message, prompt: discord.Embed or str, client: discord.Client):
     """
     wait for user input in DM after sending ask_str
@@ -172,6 +191,7 @@ async def dm_input(init_msg: discord.Message, prompt: discord.Embed or str, clie
     return user_input.content
 
 
+# user & role
 def validate_role_id(guild: discord.Guild, role_id: str):
     """
     validates a role ID
@@ -192,6 +212,7 @@ def user_mention(user_id: str or int):
     return "<@!{}>".format(user_id)
 
 
+# time
 def format_time(time):
     return str(time).split(".")[0]
 
