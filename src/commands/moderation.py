@@ -3,7 +3,6 @@ commands under category "Moderation"
 """
 
 import asyncio
-import discord
 
 from src.command_handler import handler
 from src.perms import *
@@ -29,11 +28,17 @@ async def mute(message, args, client):
     time = parse_time(args[1])
     reason = " ".join(args[2:]) if len(args) > 2 else "None given"
 
+    if member.bot:
+        await message.reply("You cannot mute a bot.", mention_author=False)
+        return
+
     if not member:
         await message.reply("I need a valid user ID as the first argument lol.", mention_author=False)
         return
-    if not time:
-        await message.reply("Dude give me a valid time (eg 2d12h30m15s) as second argument.", mention_author=False)
+    if not time and args[1].lower() != "forever":
+        await message.reply(
+            "Dude give me a valid time (eg 2d12h30m15s) as second argument or `forever`.", mention_author=False
+        )
         return
 
     muted_role = await make_muted_role(message)
@@ -48,13 +53,13 @@ async def mute(message, args, client):
 
     embed = discord.Embed(
         title="Mute",
-        description="{} was muted for `{}`! Yeah just shutup LMAOOO".format(
-            member.mention, args[1].lower()
+        description="{} was muted! Yeah just shutup LMAOOO".format(
+            member.mention
         ),
         color=discord.Color.light_gray()
     ).add_field(
         name="Muted until", value="`{}`".format(
-            format_time(datetime.datetime.now() + time)
+            format_time(datetime.datetime.now() + time) if args[1].lower() != "forever" else "Forever"
         )
     ).add_field(
         name="Reason", value="`{}`".format(reason)
@@ -76,8 +81,9 @@ async def mute(message, args, client):
     )
     update_data()
 
-    await asyncio.sleep(time.seconds)
-    await member.remove_roles(muted_role)
+    if args[1].lower() != "forever":
+        await asyncio.sleep(time.total_seconds())
+        await member.remove_roles(muted_role)
 
 
 @handler.add(perm=MODS)
@@ -128,6 +134,10 @@ async def warn(message, args, client):
     warn_member = parse_member(message.guild, warn_member_id)
     warn_reason = "None given" if len(args) < 2 else " ".join(args[1:])
 
+    if warn_member.bot:
+        await message.reply("You cannot warn a bot.", mention_author=False)
+        return
+
     if not warn_member:
         await message.reply("Gotta give me a valid user ID to warn tho.")
         return
@@ -159,7 +169,7 @@ async def warn(message, args, client):
     update_data()
 
 
-@handler.add(perm=OWNERS)
+@handler.add(["bye", "getlost"], perm=OWNERS)
 async def kick(message, args, client):
     if len(args) < 1:
         await message.reply("Who do I kick? You?", mention_author=False)
@@ -169,6 +179,10 @@ async def kick(message, args, client):
 
     if not member:
         await message.reply("Come on man give me a valid user.", mention_author=False)
+        return
+
+    if member.bot:
+        await message.reply("You cannot kick a bot.", mention_author=False)
         return
 
     await member.kick(reason=reason)
@@ -193,7 +207,7 @@ async def kick(message, args, client):
 
     embed = discord.Embed(
         title="You were kicked from {}".format(
-            member.guild.name
+            message.guild.name
         ),
         description="You can't join back until you get an invite LMAOOO",
         color=discord.Color.red()
@@ -209,4 +223,136 @@ async def kick(message, args, client):
     )
     await member.send(embed=embed)
 
-# TODO: ADD BAN COMMAND
+    # add infraction
+    get_data("{}/members/{}/infractions".format(
+        message.guild.id, member.id
+    )).append(
+        infraction_json_setup("Kick", reason, datetime.datetime.now())
+    )
+    update_data()
+
+
+@handler.add(["hammer"], perm=OWNERS)
+async def ban(message, args, client):
+    if len(args) < 1:
+        await message.reply("Tell me who to ban or I ban you.", mention_author=False)
+        return
+    if len(args) < 2:
+        await message.reply(
+            "Gotta tell me how long to ban the sinner or `forever` to ban forever.", mention_author=False
+        )
+        return
+
+    member = parse_member(message.guild, args[0])
+    time = parse_time(args[1])
+    reason = " ".join(args[2:]) if len(args) > 2 else "None given"
+
+    if member.bot:
+        await message.reply("You cannot ban a bot.", mention_author=False)
+        return
+
+    if not member:
+        await message.reply("Give me a valid user.", mention_author=False)
+        return
+    if not time and args[1].lower() != "forever":
+        await message.reply("Invalid time.", mention_author=False)
+        return
+
+    await member.ban(reason=reason)
+
+    # add infraction
+    get_data("{}/members/{}/infractions".format(
+        message.guild.id, member.id
+    )).append(
+        infraction_json_setup("Ban", reason, datetime.datetime.now())
+    )
+    set_data("{}/members/{}/banned".format(
+        message.guild.id, member.id
+    ), True)
+    update_data()
+
+    embed = discord.Embed(
+        title="Ban",
+        description="LMAO {} was banned!".format(
+            member.mention
+        ),
+        color=discord.Color.red()
+    ).add_field(
+        name="Banned until",
+        value="`{}`".format(
+            format_time(datetime.datetime.now() + time)
+        ) if args[1].lower() != "forever" else "`Forever`"
+    ).add_field(
+        name="Reason",
+        value="`{}`".format(reason)
+    ).set_author(
+        name=member.name,
+        icon_url=member.avatar_url
+    ).set_footer(
+        text="Banned by {}".format(signature(message.author))
+    )
+    await message.reply(embed=embed, mention_author=False)
+
+    embed = discord.Embed(
+        title="You were banned from {}".format(
+            message.guild.name
+        ),
+        description="Get hammered LMAOOO",
+        color=discord.Color.red()
+    ).add_field(
+        name="Banned until",
+        value="`{}`".format(
+            format_time(datetime.datetime.now() + time)
+        ) if args[1].lower() != "forever" else "`Forever`"
+    ).add_field(
+        name="Reason",
+        value="`{}`".format(reason)
+    ).set_footer(
+        text="Banned by {}".format(signature(message.author))
+    ).set_thumbnail(
+        url=message.guild.icon_url
+    )
+    await member.send(embed=embed)
+
+    if time:
+        await asyncio.sleep(time.total_seconds())
+        await member.unban()
+
+
+@handler.add(perm=OWNERS)
+async def unban(message, args, client):
+    if len(args) < 1:
+        await message.reply("Tell me who to unban.", mention_author=False)
+        return
+
+    member_id = parse_int(args[0])
+    if not member_id:
+        await message.reply("Invalid ID lol.", mention_author=False)
+        return
+
+    member = await client.fetch_user(member_id)
+    if not member:
+        await message.reply("That member doesn't even exist lol.", mention_author=False)
+        return
+
+    if not get_data("{}/members/{}/banned".format(
+        message.guild.id, member_id
+    )):
+        await message.reply("Sure. If you can teach me how to unban someone that isn't banned.", mention_author=False)
+        return
+
+    await message.guild.unban(member)
+
+    embed = discord.Embed(
+        title="Unban",
+        description="{} was unbanned!".format(member.mention),
+        color=discord.Color.green()
+    ).set_author(
+        name=member.name,
+        icon_url=member.avatar_url
+    ).set_footer(
+        text="Unbanned by {}".format(
+            signature(message.author)
+        )
+    )
+    await message.reply(embed=embed, mention_author=False)

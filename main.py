@@ -48,9 +48,6 @@ class Toxic(discord.Client):
 
         if message.author.bot or type(message.channel) is not discord.TextChannel:
             return
-        if get_data("{}/members/{}/muted".format(message.guild.id, message.author.id)) is True:
-            await message.delete()
-            return
 
         msg = message.content.strip()
         if len(msg) > 1 and msg[0] == '_':

@@ -52,14 +52,18 @@ class CommandHandler:
         name = args.pop(0).lower()
 
         if not guilds_data[str(message.author.guild.id)]["initialised"] and name != "setup":
-            await message.reply("Hey tell your server owner to do a `_setup` first, then you can order me around!")
+            await message.reply(
+                "Hey tell your server owner to do a `_setup` first, then you can order me around!", mention_author=False
+            )
             return
 
         if name in self.commands.keys():
             if perm_check(message.author, self.commands[name].perm):
                 await self.commands[name].call(message, args, client)
             else:
-                await message.reply("Whoa hold on you don't have permission to use that! Begone, peasant!")
+                await message.reply(
+                    "Whoa hold on you don't have permission to use that! Begone, peasant!", mention_author=False
+                )
 
 
 # create instance
