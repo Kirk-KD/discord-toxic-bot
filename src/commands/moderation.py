@@ -3,7 +3,7 @@ commands under category "Moderation"
 """
 
 import asyncio
-from discord.utils import get
+import discord
 
 from src.command_handler import handler
 from src.perms import *
@@ -14,7 +14,106 @@ from src.data import *
 async def mute(message, args, client):
     """mutes a user"""
 
-    # TODO: IMPLEMENT
+    if len(args) < 1:
+        await message.reply(
+            "Dude at least tell me who to mute? "
+            "Are you just messing with me because I'm a bot? That's racist man. Not cool.",
+            mention_author=False
+        )
+        return
+    if len(args) < 2:
+        await message.reply("Gotta tell me how long to mute tho.", mention_author=False)
+        return
+
+    member = parse_member(message.guild, args[0])
+    time = parse_time(args[1])
+    reason = " ".join(args[2:]) if len(args) > 2 else "None given"
+
+    if not member:
+        await message.reply("I need a valid user ID as the first argument lol.", mention_author=False)
+        return
+    if not time:
+        await message.reply("Dude give me a valid time (eg 2d12h30m15s) as second argument.", mention_author=False)
+        return
+
+    muted_role = await make_muted_role(message)
+    if not muted_role:
+        return
+
+    if muted_role in member.roles:
+        await message.reply("That guy is already muted lol.", mention_author=False)
+        return
+
+    await member.add_roles(muted_role)
+
+    embed = discord.Embed(
+        title="Mute",
+        description="{} was muted for `{}`! Yeah just shutup LMAOOO".format(
+            member.mention, args[1].lower()
+        ),
+        color=discord.Color.light_gray()
+    ).add_field(
+        name="Muted until", value="`{}`".format(
+            format_time(datetime.datetime.now() + time)
+        )
+    ).add_field(
+        name="Reason", value="`{}`".format(reason)
+    ).set_author(
+        name=member.name,
+        icon_url=member.avatar_url
+    ).set_footer(
+        text="Muted by {}".format(
+            signature(message.author)
+        )
+    )
+    await message.reply(embed=embed, mention_author=False)
+
+    # add infraction
+    get_data("{}/members/{}/infractions".format(
+        message.guild.id, member.id
+    )).append(
+        infraction_json_setup("Mute", reason, datetime.datetime.now())
+    )
+    update_data()
+
+    await asyncio.sleep(time.seconds)
+    await member.remove_roles(muted_role)
+
+
+@handler.add(perm=MODS)
+async def unmute(message, args, client):
+    if len(args) < 1:
+        await message.reply("Are you gonna tell me who to unmute or not???", mention_author=False)
+        return
+
+    member = parse_member(message.guild, args[0])
+    muted_role = await make_muted_role(message)
+
+    if not muted_role:
+        return
+    if not member:
+        await message.reply("*sigh* give me a valid user ID or mention.", mention_author=False)
+        return
+    if muted_role not in member.roles:
+        await message.reply(
+            "Fun fact: you can't unmute someone that isn't muted. Bet you didn't know this.", mention_author=False
+        )
+        return
+
+    await member.remove_roles(muted_role)
+    embed = discord.Embed(
+        title="Unmute",
+        description="{} was unmuted!".format(member.mention),
+        color=discord.Color.green()
+    ).set_author(
+        name=member.name,
+        icon_url=member.avatar_url
+    ).set_footer(
+        text="Unmuted by {}".format(
+            signature(message.author)
+        )
+    )
+    await message.reply(embed=embed, mention_author=False)
 
 
 @handler.add(perm=MODS)
@@ -35,17 +134,23 @@ async def warn(message, args, client):
 
     embed_msg = discord.Embed(
         title="Warn", description="{} was warned! Reason: `{}`".format(
-            user_mention(warn_member.id), warn_reason
+            warn_member.mention, warn_reason
         ), color=discord.Color.orange()
     ).set_author(
         name=warn_member.name, icon_url=warn_member.avatar_url
     ).set_footer(
-        text="Warned by {} ({}) • {}".format(
-            message.author.display_name, message.author, format_time(datetime.datetime.now())
+        text="Warned by {}".format(
+            signature(message.author)
         )
     )
     await message.reply(embed=embed_msg, mention_author=False)
 
-    # TODO: IMPLEMENT INFRACTION SYSTEM
+    # add infraction
+    get_data("{}/members/{}/infractions".format(
+        message.guild.id, warn_member.id
+    )).append(
+        infraction_json_setup("Mute", warn_reason, datetime.datetime.now())
+    )
+    update_data()
 
 # TODO: ADD BAN AND KICK COMMAND

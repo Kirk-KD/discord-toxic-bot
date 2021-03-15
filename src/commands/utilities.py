@@ -25,6 +25,7 @@ async def test(message, args, client):
         name="Client",
         value="<" + str(client).split()[-1]
     ).set_footer(text=timestamp())
+    print(args)
     await message.reply(embed=embed, mention_author=False)
 
 

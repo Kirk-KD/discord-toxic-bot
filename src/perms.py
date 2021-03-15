@@ -20,7 +20,6 @@ def perm_check(member: discord.Member, perm: int):
     :return: bool
     """
 
-    # TODO: simplify repeated code
     if perm == 0:  # everyone
         return True
 
