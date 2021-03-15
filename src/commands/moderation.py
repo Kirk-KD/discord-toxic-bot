@@ -133,9 +133,14 @@ async def warn(message, args, client):
         return
 
     embed_msg = discord.Embed(
-        title="Warn", description="{} was warned! Reason: `{}`".format(
+        title="Warn",
+        description="{} was warned!".format(
             warn_member.mention, warn_reason
-        ), color=discord.Color.orange()
+        ),
+        color=discord.Color.orange()
+    ).add_field(
+        name="Reason",
+        value="`{}`".format(warn_reason)
     ).set_author(
         name=warn_member.name, icon_url=warn_member.avatar_url
     ).set_footer(
@@ -153,4 +158,55 @@ async def warn(message, args, client):
     )
     update_data()
 
-# TODO: ADD BAN AND KICK COMMAND
+
+@handler.add(perm=OWNERS)
+async def kick(message, args, client):
+    if len(args) < 1:
+        await message.reply("Who do I kick? You?", mention_author=False)
+
+    member = parse_member(message.guild, args[0])
+    reason = " ".join(args[1:]) if len(args) > 1 else "None given"
+
+    if not member:
+        await message.reply("Come on man give me a valid user.", mention_author=False)
+        return
+
+    await member.kick(reason=reason)
+    embed = discord.Embed(
+        title="Kick",
+        description="{} was kicked!".format(
+            member.mention
+        ),
+        color=discord.Color.red()
+    ).add_field(
+        name="Reason",
+        value="`{}`".format(reason)
+    ).set_footer(
+        text="Kicked by {}".format(
+            signature(message.author)
+        )
+    ).set_author(
+        name=member.name,
+        icon_url=member.avatar_url
+    )
+    await message.reply(embed=embed, mention_author=False)
+
+    embed = discord.Embed(
+        title="You were kicked from {}".format(
+            member.guild.name
+        ),
+        description="You can't join back until you get an invite LMAOOO",
+        color=discord.Color.red()
+    ).add_field(
+        name="Reason",
+        value="`{}`".format(reason)
+    ).set_footer(
+        text="Kicked by {}".format(
+            signature(message.author)
+        )
+    ).set_thumbnail(
+        url=message.guild.icon_url
+    )
+    await member.send(embed=embed)
+
+# TODO: ADD BAN COMMAND
