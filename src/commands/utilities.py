@@ -25,6 +25,7 @@ async def test(message, args, client):
         name="Client",
         value="<" + str(client).split()[-1]
     ).set_footer(text=timestamp())
+    print(args)
     await message.reply(embed=embed, mention_author=False)
 
 
@@ -145,8 +146,6 @@ async def setup(message, args, client):
     guild_roles = message.guild.roles
     owner_roles = []
     mod_roles = []
-
-    # TODO: ASK FOR MUTED ROLE
 
     embed = discord.Embed(
         title="Toxic bot setup for `{}`".format(message.guild.name),

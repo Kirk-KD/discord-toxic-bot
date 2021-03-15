@@ -70,11 +70,11 @@ def parse_member(guild: discord.Guild, user_id: str):
     :return: Member or None
     """
 
-    if not parse_int(user_id):
+    if not parse_int(user_id) and not parse_int(user_id[3:-1]):
         return None
 
     for m in guild.members:
-        if m.id == parse_int(user_id):
+        if m.id == (parse_int(user_id) if parse_int(user_id) is not None else parse_int(user_id[3:-1])):
             return m
 
     return None
@@ -168,7 +168,7 @@ def infraction_json_setup(action: str, reason: str, time: datetime.datetime):
     }
 
 
-# message
+# message & guilds
 async def dm_input(init_msg: discord.Message, prompt: discord.Embed or str, client: discord.Client):
     """
     wait for user input in DM after sending ask_str
@@ -191,31 +191,37 @@ async def dm_input(init_msg: discord.Message, prompt: discord.Embed or str, clie
     return user_input.content
 
 
-# user & role
-def validate_role_id(guild: discord.Guild, role_id: str):
-    """
-    validates a role ID
+async def make_muted_role(message: discord.Message):
+    muted_role = discord.utils.get(message.guild.roles, name="Muted")
+    if not muted_role:
+        try:
+            muted_role = await message.guild.create_role(name="Muted", reason="Use for muting")
+            for channel in message.guild.channels:
+                await channel.set_permissions(muted_role, send_messages=False, add_reactions=False)
+        except discord.Forbidden:
+            await message.reply("I don't have permission to make a muted role man.", mention_author=False)
+            return None
 
-    :param guild: Guild
-    :param role_id: str
-    :return: bool
-    """
-
-    parsed = parse_int(role_id)
-    if not parsed or not guild.get_role(parsed):
-        return False
-
-    return True
+    return muted_role
 
 
-def user_mention(user_id: str or int):
-    return "<@!{}>".format(user_id)
-
-
-# time
+# string format
 def format_time(time):
     return str(time).split(".")[0]
 
 
 def timestamp():
     return format_time(datetime.datetime.now())
+
+
+def signature(member: discord.Member):
+    """
+    returns a signature of "<nick name> (<user name>) • <current time>"
+
+    :param member: Member
+    :return: str
+    """
+
+    return "{} ({}) • {}".format(
+        member.display_name, member, format_time(datetime.datetime.now())
+    )
