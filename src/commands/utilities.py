@@ -7,11 +7,13 @@ from src.perms import *
 from src.data import *
 
 import discord
+import math
+import asyncio
 
-# TODO: ADD EMBEDS
 
-
-@handler.add(["testing"], perm=EVERYONE)
+@handler.add(
+    ["testing"], perm=EVERYONE, usage="test [<args...>]"
+)
 async def test(message, args, client):
     """a simple testing command that serves no purpose"""
 
@@ -29,7 +31,9 @@ async def test(message, args, client):
     await message.reply(embed=embed, mention_author=False)
 
 
-@handler.add(["delete"], perm=OWNERS)
+@handler.add(
+    ["delete"], perm=OWNERS, usage="clear <int>"
+)
 async def clear(message, args, client):
     """deletes messages"""
 
@@ -66,7 +70,9 @@ async def clear(message, args, client):
     await message.channel.send(embed=embed)
 
 
-@handler.add(["slow", "sm"], perm=OWNERS)
+@handler.add(
+    ["slow", "sm"], perm=OWNERS, usage="slowmode <time>|off"
+)
 async def slowmode(message, args, client):
     """sets slowmode of a channel"""
 
@@ -107,7 +113,9 @@ async def slowmode(message, args, client):
     await message.channel.edit(slowmode_delay=amount)
 
 
-@handler.add([], perm=OWNERS)
+@handler.add(
+    [], perm=OWNERS, usage="setup"
+)
 async def setup(message, args, client):
     """setup command! setup process will be in the owner's DM"""
 
@@ -191,3 +199,78 @@ async def setup(message, args, client):
         color=discord.Color.green()
     )
     await message.author.send(embed=embed)
+
+
+@handler.add(
+    [], perm=EVERYONE, usage="help"
+)
+async def help_(message, args, client):
+    """get some help."""
+
+    cmd_names = []
+    pages = []
+    page_count = int(math.ceil(handler.cmd_count / 5))
+    cmd_idx = 0
+
+    def page(page_i, cmd_i):
+        embed = discord.Embed(
+            title="Help",
+            description="Here is a list of commands!",
+            color=discord.Color.blue()
+        ).set_footer(
+            text="page {}/{}".format(
+                page_i + 1, page_count
+            )
+        )
+
+        index = cmd_i
+        for command in handler.commands.values():
+            if command.name in cmd_names:
+                continue
+
+            cmd_names.append(command.name)
+            embed.add_field(
+                name=command.name,
+                value="`{}`".format(command.usage),
+                inline=False
+            )
+
+            index += 1
+            if index >= cmd_i + 5:
+                break
+
+        return embed, cmd_i
+
+    def check(reaction, user):
+        return user == message.author
+
+    for i in range(page_count):
+        p, idx = page(i, cmd_idx)
+        cmd_idx = idx
+        pages.append(p)
+
+    page_idx = 0
+    msg = await message.channel.send(embed=pages[0], mention_author=False)
+    await msg.add_reaction("◀")
+    await msg.add_reaction("▶")
+
+    emoji = ""
+    while True:
+        if emoji == "▶":
+            page_idx = (page_idx + 1) if page_idx < page_count - 1 else 0
+            await msg.edit(embed=pages[page_idx])
+        elif emoji == "◀":
+            page_idx = (page_idx - 1) if page_idx > 0 else page_count - 1
+            await msg.edit(embed=pages[page_idx])
+
+        try:
+            res = await client.wait_for("reaction_add", timeout=120.0, check=check)
+            if res is None:
+                break
+            if str(res[1]) != client.user.name:
+                emoji = str(res[0].emoji)
+                await msg.remove_reaction(res[0].emoji, res[1])
+        except asyncio.exceptions.TimeoutError:
+            break
+
+    await client.clear_reactions(msg)
