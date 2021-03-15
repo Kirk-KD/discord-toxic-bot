@@ -49,7 +49,7 @@ def parse_time(s: str):
     :return: timedelta or None
     """
 
-    regex = re.compile(r'((?P<hours>\d+?)h)?((?P<minutes>\d+?)m)?((?P<seconds>\d+?)s)?')
+    regex = re.compile(r'((?P<days>\d+?)d)?((?P<hours>\d+?)h)?((?P<minutes>\d+?)m)?((?P<seconds>\d+?)s)?')
     parts = regex.match(s.lower())
     if not parts:
         return None
@@ -145,7 +145,6 @@ def member_json_setup():
     """
 
     return {
-        "muted": False,
         "banned": False,
         "infractions": []
     }

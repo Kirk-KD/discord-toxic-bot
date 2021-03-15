@@ -23,25 +23,20 @@ def perm_check(member: discord.Member, perm: int):
     if perm == 0:  # everyone
         return True
 
-    if perm <= 4:  # dev
+    if perm <= 3:  # dev
         if str(member.id) == os.getenv("DEV") and str(member.guild.id) == os.getenv("DEV_SERVER"):
             return True
 
-    if perm <= 3:  # owners
+    if perm <= 2:  # owners
         if member.id == member.guild.owner_id:
             return True
         for role in member.roles:
             if str(role.id) in guilds_data[str(member.guild.id)]["settings"]["perm_ids"]["owner"]:
                 return True
 
-    if perm <= 2:  # moderators
+    if perm <= 1:  # moderators
         for role in member.roles:
             if str(role.id) in guilds_data[str(member.guild.id)]["settings"]["perm_ids"]["mod"]:
-                return True
-
-    if perm <= 1:  # users
-        for role in member.roles:
-            if str(role.id) in guilds_data[str(member.guild.id)]["settings"]["perm_ids"]["user"]:
                 return True
 
     return False
@@ -49,7 +44,6 @@ def perm_check(member: discord.Member, perm: int):
 
 # perms
 EVERYONE = 0
-USER = 1
-MODS = 2
-OWNERS = 3
-DEV = 4
+MODS = 1
+OWNERS = 2
+DEV = 3
