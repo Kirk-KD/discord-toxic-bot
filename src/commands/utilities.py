@@ -4,10 +4,8 @@ commands under category "Utilities"
 
 from src.command_handler import handler
 from src.perms import *
-from src.data import *
 
 from src.util.parser import *
-from src.util.time import *
 from src.util.bot import *
 
 import discord
@@ -128,9 +126,6 @@ async def setup(message, args, client):
         input_str = await dm_input(message, msg_embed, client)
         input_nums = input_str.split()
 
-        if input_str.lower() == "none":
-            return True
-
         for num in input_nums:
             n = parse_int(num)
             if not n or n >= len(guild_roles_):
@@ -142,8 +137,27 @@ async def setup(message, args, client):
         return True
 
     if guilds_data[str(message.author.guild.id)]["initialised"]:
-        await message.reply("yo your server was already initialised lol", mention_author=False)
-        return
+        await message.reply(
+            ("yo your server was already initialised lol. "
+             "Do you wish to redo setup? Reply `yes` in 10 seconds if you do."), mention_author=False
+        )
+
+        def check(m):
+            return m.channel == message.channel and m.author == message.author
+        try:
+            msg = await client.wait_for("message", check=check, timeout=10)
+            if msg.content.lower() != "yes":
+                await message.channel.send("Setup redo canceled.")
+                return
+            else:
+                # initialise settings
+                set_data("{}/settings/perm_ids/owner".format(message.guild.id), [])
+                set_data("{}/settings/perm_ids/mod".format(message.guild.id), [])
+                set_data("{}/initialised".format(message.guild.id), False)
+                update_data()
+        except asyncio.exceptions.TimeoutError:
+            await message.channel.send("Setup redo canceled.")
+            return
 
     await message.reply("Alrighty i'll be waiting for you in your dm", mention_author=False)
 
@@ -162,7 +176,7 @@ async def setup(message, args, client):
     embed = discord.Embed(
         title="What are the roles for **\"owners\"**?",
         description=("They are the ones that can use (almost) every command. "
-                     "Type their number(s) below separated by spaces! Type `none` for none."),
+                     "Type their number(s) below separated by spaces!"),
         color=discord.Color.blue()
     )
     for i, r in enumerate(guild_roles):
@@ -174,7 +188,7 @@ async def setup(message, args, client):
         title="What are the roles for **\"moderators\"**?",
         description=("They are the ones that can use `warn`, `mute` and other commands "
                      "except the owner only ones (`kick`, `slowmode`, `ban`). "
-                     "Type their number(s) below separated by spaces! Type `none` for none."),
+                     "Type their number(s) below separated by spaces!"),
         color=discord.Color.blue()
     )
     for i, r in enumerate(guild_roles):
@@ -221,7 +235,7 @@ async def help_(message, args, client):
         )
 
         index = cmd_i
-        for command in handler.commands.values():
+        for command in sorted(handler.commands.values(), key=lambda c: c.name):
             if command.name in cmd_names:
                 continue
 
@@ -268,7 +282,7 @@ async def help_(message, args, client):
                 if str(res[1]) != client.user.name:
                     emoji = str(res[0].emoji)
                     await msg.remove_reaction(res[0].emoji, res[1])
-            except asyncio.exceptions.TimeoutError:
+            except TimeoutError:
                 break
 
         await msg.clear_reactions()
