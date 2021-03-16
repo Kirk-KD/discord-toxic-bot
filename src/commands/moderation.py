@@ -11,6 +11,7 @@ from src.util.bot import *
 from src.util.time import *
 
 import asyncio
+import discord
 
 
 @handler.add(

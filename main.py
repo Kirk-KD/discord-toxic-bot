@@ -9,7 +9,8 @@ from src.commands import (
 
 from src.command_handler import handler
 from src.data import *
-from src.util import *
+
+from src.util.jsons import *
 
 from dotenv import load_dotenv
 import os
