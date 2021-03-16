@@ -4,7 +4,6 @@ commands under category "Moderation"
 
 from src.command_handler import handler
 from src.perms import *
-from src.data import *
 
 from src.util.parser import *
 from src.util.bot import *
