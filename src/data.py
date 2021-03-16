@@ -2,7 +2,8 @@
 stores data read from json files
 """
 
-from src.util import *
+from src.util.jsons import *
+
 
 # load data
 guilds_data = read_json("saved_data/guilds.json")

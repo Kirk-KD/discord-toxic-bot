@@ -2,11 +2,15 @@
 commands under category "Moderation"
 """
 
-import asyncio
-
 from src.command_handler import handler
 from src.perms import *
 from src.data import *
+
+from src.util.parser import *
+from src.util.bot import *
+from src.util.time import *
+
+import asyncio
 
 
 @handler.add(
@@ -170,7 +174,7 @@ async def warn(message, args, client):
     get_data("{}/members/{}/infractions".format(
         message.guild.id, warn_member.id
     )).append(
-        infraction_json_setup("Mute", warn_reason, datetime.datetime.now())
+        infraction_json_setup("Warn", warn_reason, datetime.datetime.now())
     )
     update_data()
 
