@@ -246,28 +246,31 @@ async def help_(message, args, client):
         cmd_idx = idx
         pages.append(p)
 
-    page_idx = 0
-    msg = await message.channel.send(embed=pages[0], mention_author=False)
-    await msg.add_reaction("◀")
-    await msg.add_reaction("▶")
+    try:
+        page_idx = 0
+        msg = await message.channel.send(embed=pages[0], mention_author=False)
+        await msg.add_reaction("◀")
+        await msg.add_reaction("▶")
 
-    emoji = ""
-    while True:
-        if emoji == "▶":
-            page_idx = (page_idx + 1) if page_idx < page_count - 1 else 0
-            await msg.edit(embed=pages[page_idx])
-        elif emoji == "◀":
-            page_idx = (page_idx - 1) if page_idx > 0 else page_count - 1
-            await msg.edit(embed=pages[page_idx])
+        emoji = ""
+        while True:
+            if emoji == "▶":
+                page_idx = (page_idx + 1) if page_idx < page_count - 1 else 0
+                await msg.edit(embed=pages[page_idx])
+            elif emoji == "◀":
+                page_idx = (page_idx - 1) if page_idx > 0 else page_count - 1
+                await msg.edit(embed=pages[page_idx])
 
-        try:
-            res = await client.wait_for("reaction_add", timeout=120.0, check=check)
-            if res is None:
+            try:
+                res = await client.wait_for("reaction_add", timeout=120.0, check=check)
+                if res is None:
+                    break
+                if str(res[1]) != client.user.name:
+                    emoji = str(res[0].emoji)
+                    await msg.remove_reaction(res[0].emoji, res[1])
+            except asyncio.exceptions.TimeoutError:
                 break
-            if str(res[1]) != client.user.name:
-                emoji = str(res[0].emoji)
-                await msg.remove_reaction(res[0].emoji, res[1])
-        except asyncio.exceptions.TimeoutError:
-            break
 
-    await client.clear_reactions(msg)
+        await msg.clear_reactions()
+    except discord.NotFound:  # TODO: FIND OUT WHY SINCE NOTHING IS BROKEN
+        pass

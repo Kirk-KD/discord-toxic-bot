@@ -1,3 +1,7 @@
+from src.data import *
+
+from src.util.time import *
+
 import discord
 
 
@@ -35,3 +39,29 @@ async def make_muted_role(message: discord.Message):
             return None
 
     return muted_role
+
+
+def get_infractions(member: discord.Member):
+    infractions = get_data("{}/members/{}/infractions".format(
+        str(member.guild.id), str(member.id)
+    ))[::-1]  # reversed because newest is always last
+    counter = {
+        "mute": 0,
+        "warn": 0,
+        "kick": 0,
+        "ban": 0
+    }
+    res = []
+
+    for inf in infractions:
+        res.append("**{}** `{}` • {}".format(
+            inf["action"], inf["reason"], inf["time"]
+        ))
+        counter[inf["action"].lower()] += 1
+
+    # res = ["**{}** {} • {}".format(
+    #     inf["action"], inf["reason"], inf["time"]
+    # ) for inf in infractions]
+    # res = "\n".join((res[:14] if len(res) >= 15 else res))  # 15 max
+
+    return "\n".join(res), counter

@@ -1,3 +1,5 @@
+from src.util.time import *
+
 import json
 import discord
 import datetime
@@ -85,5 +87,5 @@ def infraction_json_setup(action: str, reason: str, time: datetime.datetime):
     return {
         "action": action,
         "reason": reason,
-        "time": int(time.timestamp())
+        "time": format_time(time)
     }
