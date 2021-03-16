@@ -35,10 +35,6 @@ async def mute(message, args, client):
     time = parse_time(args[1])
     reason = " ".join(args[2:]) if len(args) > 2 else "None given"
 
-    if member.bot:
-        await message.reply("You cannot mute a bot.", mention_author=False)
-        return
-
     if not member:
         await message.reply("I need a valid user ID as the first argument lol.", mention_author=False)
         return
@@ -46,6 +42,9 @@ async def mute(message, args, client):
         await message.reply(
             "Dude give me a valid time (eg 2d12h30m15s) as second argument or `forever`.", mention_author=False
         )
+        return
+    if member.bot:
+        await message.reply("You cannot mute a bot.", mention_author=False)
         return
 
     muted_role = await make_muted_role(message)
@@ -372,4 +371,40 @@ async def unban(message, args, client):
             signature(message.author)
         )
     )
+    await message.reply(embed=embed, mention_author=False)
+
+
+@handler.add(["sins", "infracs"], perm=MODS, usage="infractions [<mention|id>]")
+async def infractions(message, args, client):
+    member = message.author if len(args) < 1 else parse_member(message.guild, args[0])
+    if not member:
+        await message.reply("That is not a valid member my man.", mention_author=False)
+        return
+
+    inf_msg, counter = get_infractions(member)
+    embed = discord.Embed(
+        color=discord.Color.blue()
+    ).set_author(
+        name="{}'s infractions".format(member.name),
+        icon_url=member.avatar_url
+    ).add_field(
+        name="Warns",
+        value=counter["warn"],
+        inline=True
+    ).add_field(
+        name="Mutes",
+        value=counter["mute"],
+        inline=True
+    ).add_field(
+        name="Kicks & Bans",
+        value=counter["kick"] + counter["ban"],
+        inline=True
+    ).add_field(
+        name="Last 15 infractions",
+        value=inf_msg if inf_msg != "" else "This member has not committed any sins :/",
+        inline=False
+    ).set_footer(
+        text="That's clean man" if inf_msg == "" else "You feel your sins crawling on you back"
+    )
+
     await message.reply(embed=embed, mention_author=False)
