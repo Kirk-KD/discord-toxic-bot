@@ -6,6 +6,10 @@ from src.command_handler import handler
 from src.perms import *
 from src.data import *
 
+from src.util.parser import *
+from src.util.time import *
+from src.util.bot import *
+
 import discord
 import math
 import asyncio
@@ -27,7 +31,7 @@ async def test(message, args, client):
         name="Client",
         value="<" + str(client).split()[-1]
     ).set_footer(text=timestamp())
-    print(args)
+
     await message.reply(embed=embed, mention_author=False)
 
 
@@ -83,14 +87,7 @@ async def slowmode(message, args, client):
         )
         return
 
-    amount = int(parse_time(args[0]).seconds) if parse_time(args[0]) is not None else 0
-
-    if amount < 0:
-        await message.reply(
-            "Ahh I see that you are not very familiar with time? A delay cannot be negative. You are welcome.",
-            mention_author=False
-        )
-        return
+    amount = int(parse_time(args[0]).total_seconds()) if parse_time(args[0]) is not None else 0
 
     if amount == 0:
         if message.channel.slowmode_delay == 0:

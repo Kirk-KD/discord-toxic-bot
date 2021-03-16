@@ -2,8 +2,9 @@
 integers representing permission levels and a permission checking function
 """
 
-import os
 from src.data import *
+
+import os
 
 
 def perm_check(member: discord.Member, perm: int):
