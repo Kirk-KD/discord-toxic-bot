@@ -49,19 +49,49 @@ def get_infractions(member: discord.Member):
         "mute": 0,
         "warn": 0,
         "kick": 0,
-        "ban": 0
+        "ban": 0,
+        "total": 0
     }
     res = []
 
     for inf in infractions:
-        res.append("**{}** `{}` • {}".format(
-            inf["action"], inf["reason"], inf["time"]
+        res.append("**{}** • {}\n`{}`\n".format(
+            inf["action"], inf["time"], inf["reason"]
         ))
         counter[inf["action"].lower()] += 1
+        counter["total"] += 1
 
-    # res = ["**{}** {} • {}".format(
-    #     inf["action"], inf["reason"], inf["time"]
-    # ) for inf in infractions]
-    # res = "\n".join((res[:14] if len(res) >= 15 else res))  # 15 max
+    res = "\n".join(res[:9] if len(res) > 10 else res)
 
-    return "\n".join(res), counter
+    return res, counter
+
+
+def get_user_info(member: discord.Member, message: discord.Message):
+    embed = discord.Embed(
+        color=discord.Color.blue()
+    ).set_author(
+        name="User info of {}".format(member),
+        icon_url=member.avatar_url
+    ).add_field(
+        name="User Name",
+        value="{} ({})".format(member.display_name, member)
+    ).add_field(
+        name="User ID",
+        value=member.id
+    ).add_field(
+        name="Infractions",
+        value=get_infractions(member)[1]["total"]
+    ).add_field(
+        name="Joined Server",
+        value=format_time(member.joined_at)
+    ).add_field(
+        name="Joined Discord",
+        value=format_time(member.created_at)
+    ).add_field(
+        name="Boosting Since",
+        value=format_time(p) if (p := member.premium_since) else "Not Boosting"
+    ).set_footer(
+        text="Requested by {}".format(signature(message.author))
+    )
+
+    return embed
