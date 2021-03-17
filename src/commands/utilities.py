@@ -34,81 +34,6 @@ async def test(message, args, client):
 
 
 @handler.add(
-    ["delete"], perm=OWNERS, usage="clear <int>"
-)
-async def clear(message, args, client):
-    """deletes messages"""
-
-    num = parse_int(args[0])
-    if len(args) == 0 or num is None:
-        await message.reply("Dude u need to tell me how many messages to delete lol", mention_author=False)
-        return
-
-    if num <= 0:
-        await message.reply(
-            "Trying to break me huh? Try to delete {} messages yourself".format(num), mention_author=False
-        )
-        return
-
-    deleted = await message.channel.purge(limit=num)
-    if len(deleted) <= 3:
-        embed = discord.Embed(
-            title=str(len(deleted)) + " messages deleted",
-            description="{} fine, deleted. Its just {} messages cant you do it yourself you lazy bum??".format(
-                message.author.mention, len(deleted)
-            ),
-            color=discord.Color.green()
-        ).set_footer(text=timestamp())
-        await message.channel.send(embed=embed)
-        return
-
-    embed = discord.Embed(
-        title=str(len(deleted)) + " messages deleted",
-        description="{} Alright, {} messages deleted.".format(
-            message.author.mention, len(deleted)
-        ),
-        color=discord.Color.green()
-    ).set_footer(text=timestamp())
-    await message.channel.send(embed=embed)
-
-
-@handler.add(
-    ["slow", "sm"], perm=OWNERS, usage="slowmode <time>|off"
-)
-async def slowmode(message, args, client):
-    """sets slowmode of a channel"""
-
-    if len(args) == 0 or not (parse_time(args[0]) or (parse_bool(args[0]) is False)):
-        await message.reply(
-            "Ayo gotta tell me how long you want the slowmode to be or \"off\" to turn it off",
-            mention_author=False
-        )
-        return
-
-    amount = int(parse_time(args[0]).total_seconds()) if parse_time(args[0]) is not None else 0
-
-    if amount == 0:
-        if message.channel.slowmode_delay == 0:
-            await message.reply("Slowmode was already off you nerd.", mention_author=False)
-            return
-
-        embed = discord.Embed(
-            title="Slowmode is now off",
-            color=discord.Color.green()
-        ).set_footer(text=timestamp())
-        await message.reply(embed=embed, mention_author=False)
-    else:
-        embed = discord.Embed(
-            title="Slowmode set to {}".format(args[0]),
-            description="Now suffer from the slowness!",
-            color=discord.Color.green()
-        ).set_footer(text=timestamp())
-        await message.reply(embed=embed, mention_author=False)
-
-    await message.channel.edit(slowmode_delay=amount)
-
-
-@handler.add(
     [], perm=OWNERS, usage="setup"
 )
 async def setup(message, args, client):
@@ -286,5 +211,93 @@ async def help_(message, args, client):
                 break
 
         await msg.clear_reactions()
-    except discord.NotFound:  # TODO: FIND OUT WHY SINCE NOTHING IS BROKEN
+    except discord.NotFound:  # message deleted
         pass
+
+
+@handler.add(
+    ["delete"], perm=OWNERS, usage="clear <int>"
+)
+async def clear(message, args, client):
+    """deletes messages"""
+
+    num = parse_int(args[0])
+    if len(args) == 0 or num is None:
+        await message.reply("Dude u need to tell me how many messages to delete lol", mention_author=False)
+        return
+
+    if num <= 0:
+        await message.reply(
+            "Trying to break me huh? Try to delete {} messages yourself".format(num), mention_author=False
+        )
+        return
+
+    deleted = await message.channel.purge(limit=num)
+    if len(deleted) <= 3:
+        embed = discord.Embed(
+            title=str(len(deleted)) + " messages deleted",
+            description="{} fine, deleted. Its just {} messages cant you do it yourself you lazy bum??".format(
+                message.author.mention, len(deleted)
+            ),
+            color=discord.Color.green()
+        ).set_footer(text=timestamp())
+        await message.channel.send(embed=embed)
+        return
+
+    embed = discord.Embed(
+        title=str(len(deleted)) + " messages deleted",
+        description="{} Alright, {} messages deleted.".format(
+            message.author.mention, len(deleted)
+        ),
+        color=discord.Color.green()
+    ).set_footer(text=timestamp())
+    await message.channel.send(embed=embed)
+
+
+@handler.add(
+    ["slow", "sm"], perm=OWNERS, usage="slowmode <time>|off"
+)
+async def slowmode(message, args, client):
+    """sets slowmode of a channel"""
+
+    if len(args) == 0 or not (parse_time(args[0]) or (parse_bool(args[0]) is False)):
+        await message.reply(
+            "Ayo gotta tell me how long you want the slowmode to be or \"off\" to turn it off",
+            mention_author=False
+        )
+        return
+
+    amount = int(parse_time(args[0]).total_seconds()) if parse_time(args[0]) is not None else 0
+
+    if amount == 0:
+        if message.channel.slowmode_delay == 0:
+            await message.reply("Slowmode was already off you nerd.", mention_author=False)
+            return
+
+        embed = discord.Embed(
+            title="Slowmode is now off",
+            color=discord.Color.green()
+        ).set_footer(text=timestamp())
+        await message.reply(embed=embed, mention_author=False)
+    else:
+        embed = discord.Embed(
+            title="Slowmode set to {}".format(args[0]),
+            description="Now suffer from the slowness!",
+            color=discord.Color.green()
+        ).set_footer(text=timestamp())
+        await message.reply(embed=embed, mention_author=False)
+
+    await message.channel.edit(slowmode_delay=amount)
+
+
+@handler.add(
+    ["user", "info", "ui"], perm=EVERYONE, usage="userinfo [<mention|id>]"
+)
+async def userinfo(message, args, client):
+    member = parse_member(message.guild, args[0]) if len(args) > 0 else message.author
+    if not member:
+        await message.reply("That member doesn't even exist what are you doing lmao", mention_author=False)
+        return
+
+    embed = get_user_info(member, message)
+    await message.reply(embed=embed, mention_author=False)

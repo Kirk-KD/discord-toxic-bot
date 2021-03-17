@@ -399,7 +399,11 @@ async def infractions(message, args, client):
         value=counter["kick"] + counter["ban"],
         inline=True
     ).add_field(
-        name="Last 15 infractions",
+        name="Total",
+        value="{} infractions".format(counter["total"]),
+        inline=False
+    ).add_field(
+        name="Last 10 infractions",
         value=inf_msg if inf_msg != "" else "This member has not committed any sins :/",
         inline=False
     ).set_footer(
