@@ -14,7 +14,7 @@ import asyncio
 
 
 @handler.add(
-    ["testing"], perm=EVERYONE, usage="test [<args...>]"
+    ["testing"], perm=EVERYONE, usage="test [<args...>]", category="Utilities"
 )
 async def test(message, args, client):
     """a simple testing command that serves no purpose"""
@@ -34,7 +34,7 @@ async def test(message, args, client):
 
 
 @handler.add(
-    [], perm=OWNERS, usage="setup"
+    [], perm=OWNERS, usage="setup", category="Utilities"
 )
 async def setup(message, args, client):
     """setup command! setup process will be in the owner's DM"""
@@ -138,7 +138,7 @@ async def setup(message, args, client):
 
 
 @handler.add(
-    [], perm=EVERYONE, usage="help"
+    [], perm=EVERYONE, usage="help", category="Utilities"
 )
 async def help_(message, args, client):
     """get some help."""
@@ -216,7 +216,7 @@ async def help_(message, args, client):
 
 
 @handler.add(
-    ["delete"], perm=OWNERS, usage="clear <int>"
+    ["delete"], perm=OWNERS, usage="clear <int>", category="Utilities"
 )
 async def clear(message, args, client):
     """deletes messages"""
@@ -255,7 +255,7 @@ async def clear(message, args, client):
 
 
 @handler.add(
-    ["slow", "sm"], perm=OWNERS, usage="slowmode <time>|off"
+    ["slow", "sm"], perm=OWNERS, usage="slowmode <time>|off", category="Utilities"
 )
 async def slowmode(message, args, client):
     """sets slowmode of a channel"""
@@ -291,7 +291,7 @@ async def slowmode(message, args, client):
 
 
 @handler.add(
-    ["user", "info", "ui"], perm=EVERYONE, usage="userinfo [<mention|id>]"
+    ["user", "info", "ui"], perm=EVERYONE, usage="userinfo [<mention|id>]", category="Utilities"
 )
 async def userinfo(message, args, client):
     member = parse_member(message.guild, args[0]) if len(args) > 0 else message.author
