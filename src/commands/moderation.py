@@ -14,7 +14,7 @@ import discord
 
 
 @handler.add(
-    ["shutup"], perm=MODS, usage="mute <mention|id> <time>|\"forever\" [<reason>]"
+    ["shutup"], perm=MODS, usage="mute <mention|id> <time>|\"forever\" [<reason>]", category="Moderation"
 )
 async def mute(message, args, client):
     """mutes a user"""
@@ -92,7 +92,7 @@ async def mute(message, args, client):
 
 
 @handler.add(
-    [], perm=MODS, usage="unmute <mention|id>"
+    [], perm=MODS, usage="unmute <mention|id>", category="Moderation"
 )
 async def unmute(message, args, client):
     if len(args) < 1:
@@ -130,7 +130,7 @@ async def unmute(message, args, client):
 
 
 @handler.add(
-    [], perm=MODS, usage="warn <mention|id> [<reason>]"
+    [], perm=MODS, usage="warn <mention|id> [<reason>]", category="Moderation"
 )
 async def warn(message, args, client):
     """warns a user"""
@@ -179,7 +179,7 @@ async def warn(message, args, client):
 
 
 @handler.add(
-    ["bye", "getlost"], perm=OWNERS, usage="kick <mention|id> [reason]"
+    ["bye", "getlost"], perm=OWNERS, usage="kick <mention|id> [reason]", category="Moderation"
 )
 async def kick(message, args, client):
     if len(args) < 1:
@@ -244,7 +244,7 @@ async def kick(message, args, client):
 
 
 @handler.add(
-    ["hammer"], perm=OWNERS, usage="ban <time>|\"forever\" <mention|id> [reason]"
+    ["hammer"], perm=OWNERS, usage="ban <time>|\"forever\" <mention|id> [reason]", category="Moderation"
 )
 async def ban(message, args, client):
     if len(args) < 1:
@@ -333,7 +333,7 @@ async def ban(message, args, client):
 
 
 @handler.add(
-    [], perm=OWNERS, usage="unban <id>"
+    [], perm=OWNERS, usage="unban <id>", category="Moderation"
 )
 async def unban(message, args, client):
     if len(args) < 1:
@@ -373,7 +373,9 @@ async def unban(message, args, client):
     await message.reply(embed=embed, mention_author=False)
 
 
-@handler.add(["sins", "infracs"], perm=MODS, usage="infractions [<mention|id>]")
+@handler.add(
+    ["sins", "infracs"], perm=MODS, usage="infractions [<mention|id>]", category="Moderation"
+)
 async def infractions(message, args, client):
     member = message.author if len(args) < 1 else parse_member(message.guild, args[0])
     if not member:
