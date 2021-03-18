@@ -22,23 +22,22 @@ class CommandHandler:
         self.commands = {}
         self.cmd_count = 0
 
-    def add(self, aliases: list=None, perm: int=0, usage: str=""):
+    def add(self, aliases: list, perm: int, usage: str, category: str):
         """
         a decorator function that adds a command and its aliases to self.commands
 
         :param aliases: None or list<str>
         :param perm: int
         :param usage: str
+        :param category: str
         :return: function
         """
 
-        if aliases is None:
-            aliases = []
         self.cmd_count += 1
 
         def inner(command):
             for name in aliases + [command.__name__.strip("_")]:
-                self.commands[name] = Command(command, perm, usage)
+                self.commands[name] = Command(command, perm, usage, category)
             return command
 
         return inner
@@ -51,6 +50,7 @@ class CommandHandler:
         :param client: Client
         :return: None
         """
+
         msg = message.content.strip()[1:]
         args = msg.split()
         name = args.pop(0).lower()

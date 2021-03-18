@@ -4,7 +4,8 @@ the bot starts running from here!
 
 from src.commands import (
     utilities,
-    moderation
+    moderation,
+    fun
 )
 
 from src.command_handler import handler
@@ -54,7 +55,7 @@ class Toxic(discord.Client):
         )
         update_data()
 
-    async def on_member_join(self, member: discord.Member):  # TODO: TEST
+    async def on_member_join(self, member: discord.Member):
         if member.bot:
             return
 
