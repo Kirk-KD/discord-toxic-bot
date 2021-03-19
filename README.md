@@ -8,55 +8,55 @@ I'm not sure when this bot will be published, but keep an eye out!
 
 ## Commands
 ### Utilities
-> - **setup** `Owners`  
+- **setup** `Owners`  
 *Sets up the bot in your server.*
 
-> - **clear** *\<amount\>* `Owners`  
+- **clear** *\<amount\>* `Owners`  
 *Deletes messages in the channel the command was issued in.*  
 aliases: **delete**
 
-> - **slowmode** *\<time\>* `Owners`  
+- **slowmode** *\<time\>* `Owners`  
 *Sets slowmode in the channel the command was issued in.*  
 aliases: **slow**, **sm**
 
-> - **userinfo** *\[\<user\>\]*  
+- **userinfo** *\[\<user\>\]*  
 *Displays info of a user or yourself.*  
 aliases: **user**, **info**, **ui**
 
-> - **help** `Unfinished`  
+- **help** `Unfinished`  
 *Shows the commands.*
 
 ### Moderation
-> - **mute** *\<user\> \<time or "forever"\> \[\<reason\>\]* `Mods`  
+- **mute** *\<user\> \<time or "forever"\> \[\<reason\>\]* `Mods`  
 *Shuts an annoying user up.*  
 aliases: **shutup**
 
-> - **unmute** *\<user\>* `Mods`  
+- **unmute** *\<user\>* `Mods`  
 *Re-grants a user the right of speech.*
 
-> - **warn** *\<user\> \[\<reason\>\]* `Mods`  
+- **warn** *\<user\> \[\<reason\>\]* `Mods`  
 *Warns a user. The main purpose is just to add an infraction to the user.*
 
-> - **ban** *\<user\> \<time or "forever"\> \[\<reason\>\]* `Owners`  
+- **ban** *\<user\> \<time or "forever"\> \[\<reason\>\]* `Owners`  
 *"Get banned, sinner!" -Thor, 2011*  
 aliases: **hammer**
 
-> - **unban** *\<user\>* `Owners`  
+- **unban** *\<user\>* `Owners`  
 *Forgive the sins the sinner has committed.*
 
-> - **infractions** *\[\<user\>\]* `Mods`  
+- **infractions** *\[\<user\>\]* `Mods`  
 *Uncover a user's sins they are trying to hide. (or yourself)*  
 aliases: **infracs**, **sins**
 
 ### Fun `Unfinished`  
-> - **8ball** *\<question\>*  
+- **8ball** *\<question\>*  
 *Having trouble deciding on something?*
 
-> - **gif** *\<search\>*  
+- **gif** *\<search\>*  
 *Finds a GIF on Tenor. Also don't you dare call it jif.*  
 aliases: **notjif**
 
-> - **youtube** *\<search\>*  
+- **youtube** *\<search\>*  
 *Finds a video on Youtube.*  
 aliases: **yt**
 
