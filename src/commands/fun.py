@@ -13,6 +13,7 @@ import random
 import os
 import json
 import requests
+import youtube_search
 
 
 @handler.add(
@@ -24,7 +25,7 @@ async def _8ball(message, args, client):
         return
 
     responses = [
-        "Yes.", "No.", "Yeah!", "Nah.", "Definitely.", "Of course not.", "Ask again later.", "Very much yes."
+        "Yes.", "No.", "Yeah!", "Nah.", "Definitely.", "Of course not.", "Ask again later.", "Very much yes.",
         "My creator says yes.", "My creator says no.", "Yes imo.", "Maybe...", "Very likely, yes",
         "Very doubtful.", "Don't count on it tho.", "Certainly!", "Better not tell u :smirk:",
         "You may regret it later tho...", "You'd better not get your hopes up.", "as long as you keep it a secret."
@@ -45,6 +46,28 @@ async def gif(message, args, client):  # TODO: TRY TO CHANGE TO EMBED
         search, os.getenv("TENOR")
     )
     response = requests.get(url).json()
-    res_gif = random.choice(response["results"])
 
+    if len(response["results"]) == 0:
+        await message.reply("No gif found on tenor lol.", mention_author=False)
+        return
+
+    res_gif = random.choice(response["results"])
     await message.reply("Here's a gif from tenor!\n{}".format(res_gif["url"]), mention_author=False)
+
+
+@handler.add(
+    ["yt"], perm=EVERYONE, usage="youtube <search>", category="Fun"
+)
+async def youtube(message, args, client):
+    if len(args) < 1:
+        await message.reply("What do you want to search on youtube lol.", mention_author=False)
+        return
+
+    search = " ".join(args)
+    results = youtube_search.YoutubeSearch(search).to_dict()
+    if len(results) == 0:
+        await message.reply("No video found on youtube lol.", mention_author=False)
+        return
+
+    res = random.choice(results)
+    await message.reply("https://youtube.com{}".format(res["url_suffix"]), mention_author=False)
