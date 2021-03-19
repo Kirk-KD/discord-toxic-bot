@@ -34,7 +34,7 @@ async def _8ball(message, args, client):
 
 
 @handler.add(
-    [], perm=EVERYONE, usage="gif <search>", category="Fun"
+    ["notjif"], perm=EVERYONE, usage="gif <search>", category="Fun"
 )
 async def gif(message, args, client):  # TODO: TRY TO CHANGE TO EMBED
     if len(args) < 1:
