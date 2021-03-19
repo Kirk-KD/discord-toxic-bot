@@ -1,14 +1,10 @@
 # Toxic xD
 *This bot is still under development.*
 
----
-
 Ever wanted a (kinda) toxic bot for your server? You have found the one.
 This bot has a moderation & infractions system, gif & video search, and much more other fun stuff.
 Most of the commands are beautifully embedded, and new commands are constantly added!
 I'm not sure when this bot will be published, but keep an eye out!
-
----
 
 ## Commands
 ### Utilities
@@ -67,5 +63,3 @@ aliases: **yt**
 ---
 
 Bug or question? DM `Kirk_KD#1674` on discord or submit an issue here on Github!
-
----
