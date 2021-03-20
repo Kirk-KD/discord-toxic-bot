@@ -11,10 +11,9 @@ def perm_check(member: discord.Member, perm: int):
     """
     checks permissions of member:
     EVERYONE = 0
-    USER = 1
-    MODS = 2
-    OWNERS = 3
-    DEV = 4
+    MODS = 1
+    OWNERS = 2
+    DEV = 3
 
     :param member: Member
     :param perm: int
