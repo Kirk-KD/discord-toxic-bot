@@ -13,10 +13,17 @@ class Handler:
         if command := self.get_command(name):
             await command(message, args, client)
 
-    def get_command(self, name):
+    def get_command(self, name: str):
         for category in self.categories:
             if command := category.get_command(name):
                 return command
+
+        return None
+
+    def get_category(self, name: str):
+        for category in self.categories:
+            if category.name.lower() == name.lower():
+                return category
 
         return None
 

@@ -264,5 +264,57 @@ class Utilities(Category):
             )
             await message.author.send(embed=embed)
 
+    class Help(Command):
+        def __init__(self):
+            super().__init__(
+                ["help"], "help [<category> or <command>]",
+                "Displays the categories and commands", perms.EVERYONE
+            )
+
+        async def __call__(self, message, args, client):
+            if len(args) == 0:
+                embed = discord.Embed(
+                    title="Help",
+                    description="use `_help <category>` to get more detailed help you noob.",
+                    color=discord.Color.blue()
+                )
+
+                i = 0
+                for category in handler.categories:
+                    i += 1
+                    embed.add_field(
+                        name=category.name,
+                        value="`{}`".format(category.description),
+                        inline=i % 3 != 0  # to set to two columns instead of three
+                    )
+
+                await message.reply(embed=embed, mention_author=False)
+
+            else:
+                if category := handler.get_category(args[0].lower()):
+                    embed = discord.Embed(
+                        title="Help of category `{}`".format(category.name),
+                        color=discord.Color.blue(),
+                        description=""
+                    )
+
+                    for command in category.commands:
+                        embed.description += command.format_help()
+
+                    await message.reply(embed=embed, mention_author=False)
+
+                elif command := handler.get_command(args[0].lower()):
+                    embed = discord.Embed(
+                        title="Help of command `{}`".format(command.name),
+                        color=discord.Color.blue(),
+                        description=command.format_help()
+                    )
+
+                    await message.reply(embed=embed, mention_author=False)
+
+                else:
+                    await message.reply("That category or command doesn't even exist lol.", mention_author=False)
+                    return
+
 
 handler.add_category(Utilities)
