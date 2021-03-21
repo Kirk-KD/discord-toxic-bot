@@ -82,12 +82,12 @@ class Moderation(Category):
             await message.reply(embed=embed, mention_author=False)
 
             # add infraction
-            get_data("{}/members/{}/infractions".format(
+            guilds_data.get_data("{}/members/{}/infractions".format(
                 message.guild.id, member.id
             )).append(
                 infraction_json_setup("Mute", reason, datetime.datetime.now())
             )
-            update_data()
+            guilds_data.update_data()
 
             if args[1].lower() != "forever":
                 await asyncio.sleep(time.total_seconds())
@@ -190,12 +190,12 @@ class Moderation(Category):
             await message.reply(embed=embed_msg, mention_author=False)
 
             # add infraction
-            get_data("{}/members/{}/infractions".format(
+            guilds_data.get_data("{}/members/{}/infractions".format(
                 message.guild.id, warn_member.id
             )).append(
                 infraction_json_setup("Warn", warn_reason, datetime.datetime.now())
             )
-            update_data()
+            guilds_data.update_data()
 
     class Kick(Command):
         def __init__(self):
@@ -258,12 +258,12 @@ class Moderation(Category):
             await member.send(embed=embed)
 
             # add infraction
-            get_data("{}/members/{}/infractions".format(
+            guilds_data.get_data("{}/members/{}/infractions".format(
                 message.guild.id, member.id
             )).append(
                 infraction_json_setup("Kick", reason, datetime.datetime.now())
             )
-            update_data()
+            guilds_data.update_data()
 
     class Ban(Command):
         def __init__(self):
@@ -300,15 +300,15 @@ class Moderation(Category):
             await member.ban(reason=reason)
 
             # add infraction
-            get_data("{}/members/{}/infractions".format(
+            guilds_data.get_data("{}/members/{}/infractions".format(
                 message.guild.id, member.id
             )).append(
                 infraction_json_setup("Ban", reason, datetime.datetime.now())
             )
-            set_data("{}/members/{}/banned".format(
+            guilds_data.set_data("{}/members/{}/banned".format(
                 message.guild.id, member.id
             ), True)
-            update_data()
+            guilds_data.update_data()
 
             embed = discord.Embed(
                 title="Ban",
@@ -379,7 +379,7 @@ class Moderation(Category):
                 await message.reply("That member doesn't even exist lol.", mention_author=False)
                 return
 
-            if not get_data("{}/members/{}/banned".format(
+            if not guilds_data.get_data("{}/members/{}/banned".format(
                     message.guild.id, member_id
             )):
                 await message.reply("Sure. If you can teach me how to unban someone that isn't banned.",

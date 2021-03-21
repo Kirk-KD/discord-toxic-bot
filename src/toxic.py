@@ -18,12 +18,12 @@ class Toxic(discord.Client):
         """
 
         for guild in self.guilds:
-            guilds_data[str(guild.id)] = (
-                guilds_data[str(guild.id)]
-                if str(guild.id) in guilds_data.keys()
+            guilds_data.set_data(str(guild.id), (
+                guilds_data.get_data(str(guild.id))
+                if str(guild.id) in guilds_data.data.keys()
                 else guild_json_setup(guild)
-            )
-        update_data()
+            ))
+        guilds_data.update_data()
 
         print('Logged in as {}'.format(self.user))
 
@@ -35,20 +35,24 @@ class Toxic(discord.Client):
         :return: None
         """
 
-        guilds_data[str(guild.id)] = (
-            guilds_data[str(guild.id)]
-            if str(guild.id) in guilds_data.keys()
-            else guild_json_setup(guild)
+        guilds_data.set_data(
+            str(guild.id), (
+                guilds_data.get_data(str(guild.id))
+                if str(guild.id) in guilds_data.data.keys()
+                else guild_json_setup(guild)
+            )
         )
-        update_data()
+        guilds_data.update_data()
 
     async def on_member_join(self, member: discord.Member):
         if member.bot:
             return
 
-        if str(member.id) not in guilds_data[str(member.guild.id)]["members"].keys():
-            guilds_data[str(member.guild.id)]["members"][str(member.id)] = member_json_setup()
-            update_data()
+        if str(member.id) not in guilds_data.get_data("{}/members".format(str(member.guild.id))).keys():
+            guilds_data.set_data("{}/members/{}".format(
+                str(member.guild.id), str(member.id)
+            ), member_json_setup())
+            guilds_data.update_data()
 
     async def on_message(self, message: discord.Message):
         """
