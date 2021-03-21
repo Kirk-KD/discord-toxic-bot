@@ -2,7 +2,8 @@ from src.toxic import Toxic
 from src.commands import (
     utilities,
     moderation,
-    fun
+    fun,
+    game
 )
 
 import discord

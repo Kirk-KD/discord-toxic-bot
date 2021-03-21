@@ -26,8 +26,9 @@ class Data:
         return c
 
     def update_data(self):
-        write_json("saved_data/guilds.json", self.data)
+        write_json(self.path, self.data)
 
 
 # load data
 guilds_data = Data("saved_data/guilds.json")
+game_data = Data("saved_data/game.json")
