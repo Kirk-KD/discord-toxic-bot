@@ -47,3 +47,4 @@ EVERYONE = 0
 MODS = 1
 OWNERS = 2
 DEV = 3
+perm_names = ["Everyone", "Mods", "Owners", "Dev"]
