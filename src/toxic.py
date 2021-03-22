@@ -1,6 +1,5 @@
 from src.handler import handler
 from src.data import *
-from src.game.player import Player
 
 from src.util.jsons import *
 
@@ -32,12 +31,6 @@ class Toxic(discord.Client):
         """
 
         self.init_single_guild(guild)
-
-        for member in guild.members:
-            member_id = str(member.id)
-            if member_id not in game_data.data.keys():
-                player = Player(member_id)
-                player.save_data()
 
     async def on_member_join(self, member: discord.Member):
         if member.bot:
@@ -74,18 +67,23 @@ class Toxic(discord.Client):
         )
         guilds_data.update_data()
 
+        for member in guild.members:
+            if str(member.id) not in game_data.data.keys():
+                game_data.set_data(
+                    str(member.id), player_json_setup()
+                )
+
     def init_guilds(self):
         for guild in self.guilds:
-            guilds_data.set_data(str(guild.id), (
-                guilds_data.get_data(str(guild.id))
-                if str(guild.id) in guilds_data.data.keys()
-                else guild_json_setup(guild)
-            ))
+            self.init_single_guild(guild)
 
             for member in guild.members:
-                member_id = str(member.id)
-                if member_id not in game_data.data.keys():
-                    player = Player(member_id)
-                    player.save_data()
+                if member.bot:
+                    continue
 
-        guilds_data.update_data()
+                if str(member.id) not in game_data.data.keys():
+                    game_data.set_data(
+                        str(member.id), player_json_setup()
+                    )
+
+        game_data.update_data()

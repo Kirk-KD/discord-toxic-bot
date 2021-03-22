@@ -1,3 +1,5 @@
+import random
+
 from src.util.time import *
 
 import json
@@ -88,4 +90,17 @@ def infraction_json_setup(action: str, reason: str, time: datetime.datetime):
         "action": action,
         "reason": reason,
         "time": format_time(time)
+    }
+
+
+def player_json_setup():
+    return {
+        "txc": int(random.triangular(500, 2000, 900)),
+        "bank": {
+            "max": 5000,
+            "curr": 0
+        },
+        "inv": {},
+        "level": 0,
+        "exp": 0
     }

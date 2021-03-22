@@ -21,7 +21,7 @@ class Game(Category):
     class Beg(CooldownCommand):
         def __init__(self):
             super().__init__(
-                ["beg"], "beg", "Gotta start somewhere.", perms.EVERYONE, 15
+                ["beg"], "beg", "Gotta start somewhere.", perms.EVERYONE, 25
             )
 
         async def __call__(self, message, args, client):
@@ -62,7 +62,7 @@ class Game(Category):
                 ).set_footer(text="stonkn't :(")
                 await message.reply(embed=embed, mention_author=False)
 
-    class Balance(CooldownCommand):  # TODO: CHANGE
+    class Balance(CooldownCommand):
         def __init__(self):
             super().__init__(
                 ["balance", "money", "txc", "bal"], "balance [<user>]", "See how rich you or other people are!",
@@ -74,12 +74,59 @@ class Game(Category):
             if not member:
                 await message.reply("That user doesn't exist lol", mention_author=False)
 
+            player = game_data.data[str(member.id)]
+
             embed = discord.Embed(
                 title="{}'s Balance".format(member),
-                description="txc${}".format(game_data.data[str(member.id)]["txc"]),
                 color=discord.Color.blue()
+            ).add_field(
+                name="Wallet",
+                value="`txc${}`".format(player["txc"])
+            ).add_field(
+                name="Bank",
+                value="`txc${}`".format(player["bank"]["curr"])
+            ).add_field(
+                name="Inv Worth",
+                value="`txc$TODO`",  # TODO: IMPLEMENT
+                inline=False
             )
             await message.reply(embed=embed, mention_author=False)
+
+    class Leaderboard(CooldownCommand):
+        def __init__(self):
+            super().__init__(
+                ["leaderboard", "lb", "rich"], "leaderboard",
+                "Who's the richest in your server?", perms.EVERYONE, 3
+            )
+
+        async def __call__(self, message, args, client):
+            player = game_data.data[str(message.author.id)]
+            players = sorted(
+                [member for member in message.guild.members if not member.bot],
+                key=lambda m: game_data.data[str(m.id)]["txc"], reverse=True
+            )
+
+            emojis = ":first_place: :second_place: :third_place:".split()
+            embed = discord.Embed(
+                title="Rich bois in {}".format(message.guild.name),
+                description="",
+                color=discord.Color.gold()
+            ).set_footer(
+                text="You are at {} place\n\n".format(self.parse_place(players.index(message.author) + 1))
+            )
+            for i, p in enumerate(players):
+                embed.description += "{} **{}** - {}\n".format(
+                    emojis[i] if i < 3 else ":small_orange_diamond:", game_data.data[str(p.id)]["txc"], p
+                )
+                if i == 9:
+                    break
+
+            await message.reply(embed=embed, mention_author=False)
+
+        def parse_place(self, n):
+            s = str(n)
+            suffixes = "st nd rd".split()
+            return s + (suffixes[int(s[-1]) - 1] if 0 < int(s[-1]) < 4 else "th")
 
 
 handler.add_category(Game)
