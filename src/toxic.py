@@ -1,5 +1,6 @@
 from src.handler import handler
 from src.data import *
+
 from src.util.jsons import *
 
 import discord
@@ -17,13 +18,7 @@ class Toxic(discord.Client):
         :return: None
         """
 
-        for guild in self.guilds:
-            guilds_data[str(guild.id)] = (
-                guilds_data[str(guild.id)]
-                if str(guild.id) in guilds_data.keys()
-                else guild_json_setup(guild)
-            )
-        update_data()
+        self.init_guilds()
 
         print('Logged in as {}'.format(self.user))
 
@@ -35,20 +30,17 @@ class Toxic(discord.Client):
         :return: None
         """
 
-        guilds_data[str(guild.id)] = (
-            guilds_data[str(guild.id)]
-            if str(guild.id) in guilds_data.keys()
-            else guild_json_setup(guild)
-        )
-        update_data()
+        self.init_single_guild(guild)
 
     async def on_member_join(self, member: discord.Member):
         if member.bot:
             return
 
-        if str(member.id) not in guilds_data[str(member.guild.id)]["members"].keys():
-            guilds_data[str(member.guild.id)]["members"][str(member.id)] = member_json_setup()
-            update_data()
+        if str(member.id) not in guilds_data.get_data("{}/members".format(str(member.guild.id))).keys():
+            guilds_data.set_data("{}/members/{}".format(
+                str(member.guild.id), str(member.id)
+            ), member_json_setup())
+            guilds_data.update_data()
 
     async def on_message(self, message: discord.Message):
         """
@@ -64,3 +56,34 @@ class Toxic(discord.Client):
         msg = message.content.strip()
         if len(msg) > 1 and msg[0] == '_':
             await handler.handle(message, self)
+
+    def init_single_guild(self, guild):
+        guilds_data.set_data(
+            str(guild.id), (
+                guilds_data.get_data(str(guild.id))
+                if str(guild.id) in guilds_data.data.keys()
+                else guild_json_setup(guild)
+            )
+        )
+        guilds_data.update_data()
+
+        for member in guild.members:
+            if str(member.id) not in game_data.data.keys():
+                game_data.set_data(
+                    str(member.id), player_json_setup()
+                )
+
+    def init_guilds(self):
+        for guild in self.guilds:
+            self.init_single_guild(guild)
+
+            for member in guild.members:
+                if member.bot:
+                    continue
+
+                if str(member.id) not in game_data.data.keys():
+                    game_data.set_data(
+                        str(member.id), player_json_setup()
+                    )
+
+        game_data.update_data()

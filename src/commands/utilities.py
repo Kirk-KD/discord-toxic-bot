@@ -10,7 +10,6 @@ import discord
 import asyncio
 
 
-# TODO: ADD HELP COMMAND
 class Utilities(Category):
     def __init__(self):
         super().__init__("Utilities", "Some useful commands.")
@@ -204,10 +203,10 @@ class Utilities(Category):
                         return
                     else:
                         # initialise settings
-                        set_data("{}/settings/perm_ids/owner".format(message.guild.id), [])
-                        set_data("{}/settings/perm_ids/mod".format(message.guild.id), [])
-                        set_data("{}/initialised".format(message.guild.id), False)
-                        update_data()
+                        guilds_data.set_data("{}/settings/perm_ids/owner".format(message.guild.id), [])
+                        guilds_data.set_data("{}/settings/perm_ids/mod".format(message.guild.id), [])
+                        guilds_data.set_data("{}/initialised".format(message.guild.id), False)
+                        guilds_data.update_data()
                 except asyncio.exceptions.TimeoutError:
                     await message.channel.send("Setup redo canceled.")
                     return
@@ -249,10 +248,10 @@ class Utilities(Category):
             if not await get_user_input(guild_roles, mod_roles, embed):
                 return
 
-            set_data("{}/settings/perm_ids/owner".format(message.guild.id), owner_roles.copy())
-            set_data("{}/settings/perm_ids/mod".format(message.guild.id), mod_roles.copy())
-            set_data("{}/initialised".format(message.guild.id), True)
-            update_data()
+            guilds_data.set_data("{}/settings/perm_ids/owner".format(message.guild.id), owner_roles.copy())
+            guilds_data.set_data("{}/settings/perm_ids/mod".format(message.guild.id), mod_roles.copy())
+            guilds_data.set_data("{}/initialised".format(message.guild.id), True)
+            guilds_data.update_data()
 
             embed = discord.Embed(
                 title="Toxic bot setup complete!",

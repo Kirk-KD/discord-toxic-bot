@@ -1,4 +1,9 @@
-from src.perms import perm_names
+from src.perms import perm_names, EVERYONE, perm_check, DEV
+
+from src.util.time import format_timedelta
+
+import datetime
+import discord
 
 
 class Command:
@@ -24,3 +29,32 @@ class Command:
                 "**{}**".format(", ".join(self.triggers[1:]))
             ) if len(self.triggers) > 1 else ""
         )
+
+
+class CooldownCommand(Command):
+    def __init__(self, triggers: list, usage: str, description: str, perm: int, cooldown: int):
+        super().__init__(triggers, usage, description, perm)
+        self.cooldown = cooldown
+        self.cooldown_end = datetime.datetime.now()
+
+    async def check_cooldown(self, message):
+        if perm_check(message.author, DEV):  # dev bypass cooldown
+            return True
+
+        if self.cooldown_end <= datetime.datetime.now():
+            self.cooldown_end = datetime.datetime.now() + datetime.timedelta(seconds=self.cooldown)
+            return True
+        else:
+            delta = self.cooldown_end - datetime.datetime.now()
+            embed = discord.Embed(
+                title="Ayo stop spamming",
+                description="You can use that command again after {}!".format(
+                    format_timedelta(delta)
+                ),
+                color=discord.Color.dark_blue()
+            )
+            await message.reply(embed=embed, mention_author=False)
+            return False
+
+    async def __call__(self, message, args, client):
+        raise NotImplementedError()
