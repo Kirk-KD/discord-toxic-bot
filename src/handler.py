@@ -1,6 +1,8 @@
 from src.data import *
 from src.perms import perm_check
 
+import discord
+
 
 class Handler:
     def __init__(self):
@@ -23,7 +25,10 @@ class Handler:
 
         if command := self.get_command(name):
             if perm_check(message.author, command.perm):
-                await command(message, args, client)
+                try:
+                    await command(message, args, client)
+                except discord.Forbidden:
+                    await message.reply(":eyes: I don't have permission to do that tho.", mention_author=False)
             else:
                 await message.reply(
                     "Whoa hold on you don't have permission to use that! Begone, peasant!", mention_author=False

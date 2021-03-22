@@ -42,14 +42,14 @@ class Utilities(Category):
             )
 
         async def __call__(self, message, args, client):
-            num = parse_int(args[0])
-            if len(args) == 0 or num is None:
+            if len(args) == 0:
                 await message.reply("Dude u need to tell me how many messages to delete lol", mention_author=False)
                 return
 
-            if num <= 0:
+            num = parse_int(args[0])
+            if num is None:
                 await message.reply(
-                    "Trying to break me huh? Try to delete {} messages yourself".format(num), mention_author=False
+                    "Lmao that number is invalid.".format(num), mention_author=False
                 )
                 return
 
@@ -57,7 +57,7 @@ class Utilities(Category):
             if len(deleted) <= 3:
                 embed = discord.Embed(
                     title=str(len(deleted)) + " messages deleted",
-                    description="{} fine, deleted. Its just {} messages cant you do it yourself you lazy bum??".format(
+                    description="{} fine, deleted. Its just {} messages can't you do it yourself you lazy bum??".format(
                         message.author.mention, len(deleted)
                     ),
                     color=discord.Color.green()
@@ -124,6 +124,10 @@ class Utilities(Category):
                 await message.reply("That member doesn't even exist what are you doing lmao", mention_author=False)
                 return
 
+            if member.bot:
+                await message.reply("I can't get info of a bot my man.", mention_author=False)
+                return
+
             embed = self.get_user_info(member, message)
             await message.reply(embed=embed, mention_author=False)
 
@@ -187,7 +191,7 @@ class Utilities(Category):
 
                 return True
 
-            if guilds_data[str(message.author.guild.id)]["initialised"]:
+            if guilds_data.data[str(message.author.guild.id)]["initialised"]:
                 await message.reply(
                     ("yo your server was already initialised lol. "
                      "Do you wish to redo setup? Reply `yes` in 10 seconds if you do."), mention_author=False
