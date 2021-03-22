@@ -187,7 +187,7 @@ class Utilities(Category):
 
                 return True
 
-            if guilds_data[str(message.author.guild.id)]["initialised"]:
+            if guilds_data.data[str(message.author.guild.id)]["initialised"]:
                 await message.reply(
                     ("yo your server was already initialised lol. "
                      "Do you wish to redo setup? Reply `yes` in 10 seconds if you do."), mention_author=False

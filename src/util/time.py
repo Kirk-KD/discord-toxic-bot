@@ -4,11 +4,23 @@ import math
 import discord
 
 
-def format_time(time):
+def format_time(time: datetime.datetime):
+    """
+    basically converts time to string and keeps the part before the dot
+
+    :param time: datetime
+    :return: str
+    """
+
     return str(time).split(".")[0]
 
 
 def timestamp():
+    """
+    basically current time, but formatted using format_time
+
+    :return: str
+    """
     return format_time(datetime.datetime.now())
 
 
@@ -26,12 +38,21 @@ def signature(member: discord.Member):
 
 
 def format_timedelta(timedelta: datetime.timedelta):
+    """
+    formats timedelta to "D days, Hh Mm Ss"
+
+    :param timedelta: timedelta
+    :return: str
+    """
+
     seconds = math.ceil(timedelta.total_seconds())
-    print(seconds)
+
     days = seconds // 86400
     seconds %= 86400
+
     hours = seconds // 3600
     seconds %= 3600
+
     minutes = seconds // 60
     seconds %= 60
 

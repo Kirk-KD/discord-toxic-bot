@@ -1,7 +1,5 @@
 from src.data import *
 
-from src.util.time import *
-
 import discord
 
 
@@ -28,7 +26,14 @@ async def dm_input(init_msg: discord.Message, prompt: discord.Embed or str, clie
 
 
 def get_infractions(member: discord.Member):
-    infractions = get_data("{}/members/{}/infractions".format(
+    """
+    get infractions of a user
+
+    :param member: Member
+    :return: tuple[str, dict]
+    """
+
+    infractions = guilds_data.get_data("{}/members/{}/infractions".format(
         str(member.guild.id), str(member.id)
     ))[::-1]  # reversed because newest is always last
     counter = {

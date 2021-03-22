@@ -70,15 +70,19 @@ class Game(Category):
             )
 
         async def __call__(self, message, args, client):
+            if not await self.check_cooldown(message):
+                return
+
             member = message.author if len(args) == 0 else parse_member(message.guild, args[0])
             if not member:
                 await message.reply("That user doesn't exist lol", mention_author=False)
+                return
 
             player = game_data.data[str(member.id)]
 
             embed = discord.Embed(
                 title="{}'s Balance".format(member),
-                color=discord.Color.blue()
+                color=discord.Color.gold()
             ).add_field(
                 name="Wallet",
                 value="`txc${}`".format(player["txc"])
