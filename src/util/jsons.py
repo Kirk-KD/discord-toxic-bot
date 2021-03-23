@@ -102,5 +102,6 @@ def player_json_setup():
         },
         "inv": {},
         "level": 0,
-        "exp": 0
+        "exp": 0,
+        "multi": 0
     }

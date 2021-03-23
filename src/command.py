@@ -38,8 +38,8 @@ class CooldownCommand(Command):
         self.cooldown_end = datetime.datetime.now()
 
     async def check_cooldown(self, message):
-        if perm_check(message.author, DEV):  # dev bypass cooldown
-            return True
+        # if perm_check(message.author, DEV):  # dev bypass cooldown
+        #     return True
 
         if self.cooldown_end <= datetime.datetime.now():
             self.cooldown_end = datetime.datetime.now() + datetime.timedelta(seconds=self.cooldown)
