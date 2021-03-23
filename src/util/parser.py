@@ -43,6 +43,7 @@ def parse_time(s: str):
     :return: timedelta or None
     """
 
+    # https://stackoverflow.com/questions/4628122/how-to-construct-a-timedelta-object-from-a-simple-string
     regex = re.compile(r'((?P<days>\d+?)d)?((?P<hours>\d+?)h)?((?P<minutes>\d+?)m)?((?P<seconds>\d+?)s)?')
     parts = regex.match(s.lower())
     if not parts:

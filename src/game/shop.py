@@ -7,6 +7,10 @@ import discord
 
 
 class Shop:
+    """
+    a collection of Items.
+    """
+
     def __init__(self):
         self.items = []
 
@@ -17,6 +21,13 @@ class Shop:
                 self.items.append(getattr(self, item_name)())
 
     def get_item(self, name: str):
+        """
+        gets an Item by referencing names (not display name) or None if not found.
+
+        :param name: str
+        :return: Item or None
+        """
+
         for item in self.items:
             if name in item.ref_names:
                 return item

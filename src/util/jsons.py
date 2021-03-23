@@ -94,6 +94,12 @@ def infraction_json_setup(action: str, reason: str, time: datetime.datetime):
 
 
 def player_json_setup():
+    """
+    returns a json dict for a player in game.json
+
+    :return: dict
+    """
+
     return {
         "txc": int(random.triangular(500, 2000, 900)),
         "bank": {
