@@ -2,6 +2,7 @@ from src.handler import handler
 from src.data import *
 
 from src.util.jsons import *
+from src.util.game import *
 
 import discord
 
@@ -41,6 +42,9 @@ class Toxic(discord.Client):
                 str(member.guild.id), str(member.id)
             ), member_json_setup())
             guilds_data.update_data()
+
+        if not get_player(member.id):
+            game_data.data[str(member.id)] = player_json_setup()
 
     async def on_message(self, message: discord.Message):
         """

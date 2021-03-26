@@ -151,12 +151,15 @@ class Game(Category):
                 await message.reply("That item doesn't exist what are you doing lol", mention_author=False)
                 return
 
-            if game_data.data[str(message.author.id)]["inv"][item.name] == 0:
+            if get_player(message.author.id)["inv"][item.name] == 0:
                 await message.reply("But you don't even have that item???", mention_author=False)
                 return
 
             await use_item(message, item)
             game_data.update_data()
+
+    class Buy(CooldownCommand):
+        pass  # TODO: IMPLEMENT
 
     class Balance(CooldownCommand):
         def __init__(self):
@@ -173,7 +176,7 @@ class Game(Category):
             if not member:
                 await message.reply("That user doesn't exist lol", mention_author=False)
 
-            player = game_data.data[str(member.id)]
+            player = get_player(member.id)
 
             embed = discord.Embed(
                 title="{}'s Balance".format(member),

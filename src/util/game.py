@@ -41,6 +41,17 @@ def chance(percent: int or float):
     return random.uniform(0.0, 100.0) <= percent
 
 
+def get_player(user_id: str or int):
+    """
+    gets a player in game_data.
+
+    :param user_id: str or int
+    :return: dict
+    """
+
+    return game_data.data[str(user_id)] if str(user_id) in game_data.data.keys() else None
+
+
 def give_item(player: dict, item: Item, amount: int=1):
     """
     gives a player an item.
@@ -66,7 +77,7 @@ async def use_item(message: discord.Message, item: Item):
     :return: None
     """
 
-    player = game_data.data[str(message.author.id)]
+    player = get_player(message.author.id)
     player["inv"][item.name] -= 1
     await item.use(message)
 

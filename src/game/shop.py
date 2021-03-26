@@ -39,7 +39,7 @@ class Shop:
             super().__init__(
                 "Toxic Potion", ["toxicpotion", "toxic"],
                 "Consumed when you are dying and revives you, for some reason.",
-                False
+                250000, False, True, False
             )
 
     class Coffee(Item):
@@ -47,7 +47,7 @@ class Shop:
             super().__init__(
                 "Coffee", ["coffee"],
                 "Gives you a random stacking multiplier for every cup of coffee you drink.",
-                True
+                500000, True, True, False
             )
 
         async def use(self, message):
