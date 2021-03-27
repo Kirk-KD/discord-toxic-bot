@@ -1,6 +1,3 @@
-from src.game import player
-
-
 class Item:
     """
     an item in the game.
@@ -16,12 +13,12 @@ class Item:
         self.is_purchasable = is_purchasable
         self.is_sellable = is_sellable
 
-    def use(self, player_: player.Player):
+    def use(self, player):
         """
         returns a Embed or str to be sent after performing actions to the player.
         raises NotImplementedError if is usable and not implemented in child classes.
 
-        :param player_: Player
+        :param player: Player
         :return: str or Embed
         :raise: NotImplementedError
         """

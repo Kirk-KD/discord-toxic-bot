@@ -23,6 +23,10 @@ def perm_check(member: discord.Member, perm: int):
     if perm == 0:  # everyone
         return True
 
+    if perm <= 4:  # global dev
+        if str(member.id) == os.getenv("DEV"):
+            return True
+
     if perm <= 3:  # dev
         if str(member.id) == os.getenv("DEV") and str(member.guild.id) == os.getenv("DEV_SERVER"):
             return True
@@ -47,4 +51,5 @@ EVERYONE = 0
 MODS = 1
 OWNERS = 2
 DEV = 3
+GLOBAL_DEV = 4
 perm_names = ["Everyone", "Mods", "Owners", "Dev"]
