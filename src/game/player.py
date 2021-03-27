@@ -3,6 +3,8 @@ from src.game import item
 
 import discord
 
+from src.game.shop import shop
+
 
 class Player:
     def __init__(self, member: discord.Member):
@@ -53,16 +55,6 @@ class Player:
 
         return amount
 
-    def use_item(self, item_: item.Item):
-        """
-        call the item's user() method on the player, then returns the message returned by the item.
-
-        :param item_: Item
-        :return: str or Embed
-        """
-
-        return item_.use(self)
-
     def has_effect(self, item_: item.Item):
         """
         returns whether or not the player has an effect.
@@ -72,3 +64,20 @@ class Player:
         """
 
         return item_.display_name in self.data["effects"]
+
+    def kill(self):
+        """
+        kills the player (removes all item, clear wallet) and returns if the player is actually dead.
+
+        :return: bool
+        """
+
+        if self.has_item(shop.get_item("Toxic Water")):
+            self.remove_item(shop.get_item("Toxic Water"))
+            return False
+
+        self.data["stats"]["txc"] = 0
+        self.data["inv"] = {}
+        self.data["effects"] = []
+
+        return True

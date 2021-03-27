@@ -13,12 +13,13 @@ class Item:
         self.is_purchasable = is_purchasable
         self.is_sellable = is_sellable
 
-    def use(self, player):
+    def use(self, player, message=None):
         """
         returns a Embed or str to be sent after performing actions to the player.
         raises NotImplementedError if is usable and not implemented in child classes.
 
         :param player: Player
+        :param message: Message
         :return: str or Embed
         :raise: NotImplementedError
         """

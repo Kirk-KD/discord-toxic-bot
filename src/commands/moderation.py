@@ -380,12 +380,12 @@ class Moderation(Category):
                 await message.reply("That member doesn't even exist lol.", mention_author=False)
                 return
 
-            # if not guilds_data.get_data("{}/members/{}/banned".format(
-            #         message.guild.id, member_id
-            # )):
-            #     await message.reply("Sure. If you can teach me how to unban someone that isn't banned.",
-            #                         mention_author=False)
-            #     return
+            if not guilds_data.get_data("{}/members/{}/banned".format(
+                    message.guild.id, member_id
+            )):
+                await message.reply("Sure. If you can teach me how to unban someone that isn't banned.",
+                                    mention_author=False)
+                return
 
             await message.guild.unban(member)
 
