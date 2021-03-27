@@ -365,6 +365,7 @@ class Moderation(Category):
             )
 
         async def __call__(self, message, args, client):
+            await message.channel.send("HERE")
             if len(args) < 1:
                 await message.reply("Tell me who to unban.", mention_author=False)
                 return

@@ -1,4 +1,4 @@
-from src.perms import perm_names, EVERYONE, perm_check, DEV
+from src.perms import perm_names, perm_check, GLOBAL_DEV
 
 from src.util.time import format_timedelta
 
@@ -35,17 +35,20 @@ class CooldownCommand(Command):
     def __init__(self, triggers: list, usage: str, description: str, perm: int, cooldown: int):
         super().__init__(triggers, usage, description, perm)
         self.cooldown = cooldown
-        self.cooldown_end = datetime.datetime.now()
+        self.users = {}
 
     async def check_cooldown(self, message):
-        # if perm_check(message.author, DEV):  # dev bypass cooldown
-        #     return True
+        if perm_check(message.author, GLOBAL_DEV):  # dev bypass cooldown
+            return True
+        self.users[message.author.id] = (self.users[message.author.id]
+                                         if message.author.id in self.users.keys()
+                                         else datetime.datetime.now())
 
-        if self.cooldown_end <= datetime.datetime.now():
-            self.cooldown_end = datetime.datetime.now() + datetime.timedelta(seconds=self.cooldown)
+        if self.users[message.author.id] <= datetime.datetime.now():
+            self.users[message.author.id] = datetime.datetime.now() + datetime.timedelta(seconds=self.cooldown)
             return True
         else:
-            delta = self.cooldown_end - datetime.datetime.now()
+            delta = self.users[message.author.id] - datetime.datetime.now()
             embed = discord.Embed(
                 title="Ayo stop spamming",
                 description="You can use that command again after {}!".format(

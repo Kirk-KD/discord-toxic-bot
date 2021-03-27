@@ -101,13 +101,16 @@ def player_json_setup():
     """
 
     return {
-        "txc": int(random.triangular(500, 2000, 900)),
+        "stats": {
+            "txc": 1000,
+            "level": 0,
+            "exp": 0,
+            "multi": 0
+        },
         "bank": {
             "max": 5000,
             "curr": 0
         },
         "inv": {},
-        "level": 0,
-        "exp": 0,
-        "multi": 0
+        "effects": []
     }

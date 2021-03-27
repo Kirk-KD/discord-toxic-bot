@@ -2,14 +2,15 @@ from src.handler import handler
 from src.data import *
 
 from src.util.jsons import *
+from src.game.game_manager import manager
 
 import discord
 
 
 class Toxic(discord.Client):
     """
-        The Toxic bot!
-        """
+    The Toxic bot!
+    """
 
     async def on_ready(self):
         """
@@ -41,6 +42,9 @@ class Toxic(discord.Client):
                 str(member.guild.id), str(member.id)
             ), member_json_setup())
             guilds_data.update_data()
+
+        if not manager.get_player(member):
+            game_data.data[str(member.id)] = player_json_setup()
 
     async def on_message(self, message: discord.Message):
         """
@@ -82,8 +86,6 @@ class Toxic(discord.Client):
                     continue
 
                 if str(member.id) not in game_data.data.keys():
-                    game_data.set_data(
-                        str(member.id), player_json_setup()
-                    )
+                    game_data.data[str(member.id)] = player_json_setup()
 
         game_data.update_data()

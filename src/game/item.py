@@ -1,26 +1,30 @@
-import discord
-
-
 class Item:
     """
-    an object representing an item in the game
+    an item in the game.
     """
 
-    def __init__(self, name: str, ref_names: list[str], description: str, usable: bool):
-        self.name = name
-        self.ref_names = ref_names
+    def __init__(self, display_name: str, reference_names: list[str], description: str,
+                 price: int, is_usable: bool, is_purchasable: bool, is_sellable: bool):
+        self.display_name = display_name
+        self.reference_names = reference_names
         self.description = description
-        self.usable = usable
+        self.price = price
+        self.is_usable = is_usable
+        self.is_purchasable = is_purchasable
+        self.is_sellable = is_sellable
 
-    async def use(self, message: discord.Message):
+    def use(self, player, message=None):
         """
-        if the item is usable, raise NotImplementedError if a child class does not override this method
+        returns a Embed or str to be sent after performing actions to the player.
+        raises NotImplementedError if is usable and not implemented in child classes.
 
+        :param player: Player
         :param message: Message
-        :return: None
+        :return: str or Embed
+        :raise: NotImplementedError
         """
 
-        if self.usable:
-            raise NotImplementedError()
+        if self.is_usable:
+            raise NotImplementedError("You forgot to implement this item IDIOT.")
         else:
-            await message.reply("You can't use that lol.", mention_author=False)
+            return "You can't use this item lol."

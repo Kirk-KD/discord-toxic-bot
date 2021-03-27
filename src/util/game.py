@@ -1,14 +1,9 @@
 import random
-import discord
-
-from src.data import game_data
-from src.game.item import Item
 
 
 def multiplier(amount: int, multi: int):
     """
     returns amount + amount * multi, parsed to int.
-
     :param amount: int
     :param multi: int
     :return: int
@@ -20,7 +15,6 @@ def multiplier(amount: int, multi: int):
 def parse_place(n: int or str):
     """
     given a number or string and add "st", "nd", "rd", or "th" at the end accordingly.
-
     :param n: int or str
     :return:
     """
@@ -33,7 +27,6 @@ def parse_place(n: int or str):
 def chance(percent: int or float):
     """
     returns if a random float between 1-100 if less than or equal to percent.
-
     :param percent: int or float
     :return: bool
     """
@@ -41,47 +34,13 @@ def chance(percent: int or float):
     return random.uniform(0.0, 100.0) <= percent
 
 
-def give_item(player: dict, item: Item, amount: int=1):
-    """
-    gives a player an item.
-
-    :param player: dict
-    :param item: Item
-    :param amount: int
-    :return: None
-    """
-
-    if item.name in player["inv"].keys():
-        player["inv"][item.name] += amount
-    else:
-        player["inv"][item.name] = 1
-
-
-async def use_item(message: discord.Message, item: Item):
-    """
-    uses an item.
-
-    :param message: Message
-    :param item: Item
-    :return: None
-    """
-
-    player = game_data.data[str(message.author.id)]
-    player["inv"][item.name] -= 1
-    await item.use(message)
-
-
-def kill_player(player: dict):
-    """
-    tries to kill the player and returns if the player is actually killed.
-
-    :param player: dict
-    :return: bool
-    """
-
-    if "Toxic Potion" not in player["inv"].keys():
-        player["inv"] = {}
-        player["txc"] = 0
-        return True
-
-    return False
+# https://stackoverflow.com/questions/3679694/a-weighted-version-of-random-choice
+def weighted_choice(choices):
+    total = sum(w for c, w in choices)
+    r = random.uniform(0, total)
+    upto = 0
+    for c, w in choices:
+        if upto + w >= r:
+            return c
+        upto += w
+    assert False, "Shouldn't get here"
