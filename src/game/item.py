@@ -1,68 +1,32 @@
-import discord
-
-from src.util.game import get_player
+from src.game import player
 
 
 class Item:
     """
-    an object representing an item in the game
+    an item in the game.
     """
 
-    def __init__(self, name: str, ref_names: list[str], description: str, price: int,
-                 usable: bool, purchasable: bool, sellable: bool):
-        self.name = name
-        self.ref_names = ref_names
+    def __init__(self, display_name: str, reference_names: list[str], description: str,
+                 price: int, is_usable: bool, is_purchasable: bool, is_sellable: bool):
+        self.display_name = display_name
+        self.reference_names = reference_names
         self.description = description
         self.price = price
+        self.is_usable = is_usable
+        self.is_purchasable = is_purchasable
+        self.is_sellable = is_sellable
 
-        self.usable = usable
-        self.purchasable = purchasable
-        self.sellable = sellable
-
-    async def use(self, message: discord.Message):
+    def use(self, player_: player.Player):
         """
-        if the item is usable, raise NotImplementedError if a child class does not override this method
+        returns a Embed or str to be sent after performing actions to the player.
+        raises NotImplementedError if is usable and not implemented in child classes.
 
-        :param message: Message
-        :return: None
+        :param player_: Player
+        :return: str or Embed
+        :raise: NotImplementedError
         """
 
-        if self.usable:
-            raise NotImplementedError()
+        if self.is_usable:
+            raise NotImplementedError("You forgot to implement this item IDIOT.")
         else:
-            await message.reply("You can't use that lol.", mention_author=False)
-
-    async def sell(self, message: discord.Message):
-        """
-        sells the item.
-
-        :param message: Message
-        :return: None
-        """
-
-        if self.sellable:
-            player = get_player(message.author.id)
-            player["inv"][self.name] -= 1
-            player["txc"] += self.price
-        else:
-            await message.reply("Lmao are you that poor, selling an item no shop will buy?", mention_author=False)
-
-    async def buy(self, message: discord.Message, amount: int=1):
-        """
-        buys the item.
-
-        :param message: Message
-        :param amount: int
-        :return: None
-        """
-
-        if self.sellable:
-            player = get_player(message.author.id)
-            player["txc"] -= self.price * amount
-            if self.name in player["inv"].keys():
-                player["inv"][self.name] += amount
-            else:
-                player["inv"][self.name] = amount
-        else:
-            await message.reply("lol this item is not for sale.", mention_author=False)
-
+            return "You can't use this item lol."

@@ -1,9 +1,8 @@
-from src.game.item import Item
-from src.data import game_data
+from src.game import item, effect, game_manager
 
+import discord
 import inspect
 import random
-import discord
 
 
 class Shop:
@@ -20,50 +19,43 @@ class Shop:
             if inspect.isclass(getattr(self, item_name)):
                 self.items.append(getattr(self, item_name)())
 
+    # items
+    class ToxicWater(item.Item):
+        def __init__(self):
+            super().__init__("Toxic Water", ["toxicwater", "toxic", "water"],
+                             "This bottle of unpleasant liquid, for some weird reason, can revive you!",
+                             80000, False, True, True)
+
+    class Coffee(item.Item):
+        def __init__(self):
+            super().__init__("Coffee", ["coffee"],
+                             "Drinking this will give you a 25% multi for 5-15 minutes!",
+                             15000, True, True, True)
+
+        def use(self, player):
+            minute = random.randint(5, 15)
+            effect_ = effect.Effect(minute * 60, {"multi": 25})
+            effect_.start(player, self)
+
+            return discord.Embed(
+                title="You drank your coffee!",
+                description="It gave you +25% multi for {} minutes!".format(minute),
+                color=discord.Color.green()
+            )
+
     def get_item(self, name: str):
         """
-        gets an Item by referencing names (not display name) or None if not found.
+        gets an item by name. returns None if item is not found.
 
         :param name: str
         :return: Item or None
         """
 
-        for item in self.items:
-            if name in item.ref_names:
-                return item
+        for item_ in self.items:
+            if name in item_.display_name + item_.reference_names:
+                return item_
 
         return None
-
-    class ToxicPotion(Item):
-        def __init__(self):
-            super().__init__(
-                "Toxic Potion", ["toxicpotion", "toxic"],
-                "Consumed when you are dying and revives you, for some reason.",
-                250000, False, True, False
-            )
-
-    class Coffee(Item):
-        def __init__(self):
-            super().__init__(
-                "Coffee", ["coffee"],
-                "Gives you a random stacking multiplier for every cup of coffee you drink.",
-                500000, True, True, False
-            )
-
-        async def use(self, message):
-            player = game_data.data[str(message.author.id)]
-            amount = int(random.triangular(1, 8, 3))
-            player["multi"] += amount
-            game_data.update_data()
-
-            embed = discord.Embed(
-                title="You drank your Coffee!",
-                description="It gave you an additional multi of {}%!".format(amount),
-                color=discord.Color.green()
-            ).set_footer(
-                text="You now have a multi of {}%".format(player["multi"])
-            )
-            await message.reply(embed=embed, mention_author=False)
 
 
 shop = Shop()
