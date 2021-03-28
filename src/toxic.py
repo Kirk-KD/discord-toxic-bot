@@ -1,10 +1,12 @@
 from src.handler import handler
 from src.data import *
+from src.logger import logger
 
 from src.util.jsons import *
 from src.game.game_manager import manager
 
 import discord
+import traceback
 
 
 class Toxic(discord.Client):
@@ -22,6 +24,7 @@ class Toxic(discord.Client):
         self.init_guilds()
 
         print('Logged in as {}'.format(self.user))
+        logger.log("LOGIN")
 
     async def on_guild_join(self, guild: discord.Guild):
         """
@@ -60,6 +63,13 @@ class Toxic(discord.Client):
         msg = message.content.strip()
         if len(msg) > 1 and msg[0] == '_':
             await handler.handle(message, self)
+
+    async def on_error(self, event, *args, **kwargs):
+        message = args[0]
+        logger.log("ERROR", "Error caused by \"{}\" when using command \"{}\". Error message:\n{}".format(
+            message.author, message.content, traceback.format_exc()
+        ))
+        await message.reply("Hey uhh you broke me. Congrats.")
 
     def init_single_guild(self, guild):
         guilds_data.set_data(
