@@ -30,5 +30,5 @@ class Data:
 
 
 # load data
-guilds_data = Data("saved_data/guilds.json")
-game_data = Data("saved_data/game.json")
+guilds_data = Data("data/guilds.json")
+game_data = Data("data/game.json")
