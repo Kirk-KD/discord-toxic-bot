@@ -37,7 +37,7 @@ class Shop:
             await player.gain_exp(exp)
 
             return discord.Embed(
-                title="You shoved a whole chocolate bar in your mouth!",
+                title="You ate a chocolate bar!",
                 description="It tastes so good that you gained **{}** EXP!".format(exp),
                 color=discord.Color.green()
             )
@@ -54,7 +54,7 @@ class Shop:
 
             embed = discord.Embed(
                 title="You drank your coffee!",
-                description="It gave you +25% multi for {} minutes!".format(minute),
+                description="It gave you +15% multi for {} minutes!".format(minute),
                 color=discord.Color.green()
             )
             await message.reply(embed=embed, mention_author=False)

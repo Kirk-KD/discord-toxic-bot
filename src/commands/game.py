@@ -354,6 +354,18 @@ class Game(Category):
                     exp
                 ),
                 inline=False
+            ).add_field(
+                name="Multi",
+                value="`+{}%`".format(player.data["stats"]["multi"]),
+                inline=True
+            ).add_field(
+                name="Wallet",
+                value="`txc${}`".format(player.data["stats"]["txc"]),
+                inline=True
+            ).add_field(
+                name="Bank",
+                value="`txc${} / {}`".format(player.data["bank"]["curr"], player.data["bank"]["max"]),
+                inline=True
             )
 
             await message.reply(embed=embed, mention_author=False)
@@ -391,6 +403,7 @@ class Game(Category):
 
             await message.reply(embed=embed, mention_author=False)
 
+    # gamble
     class Bet(CooldownCommand):
         def __init__(self):
             super().__init__(["bet", "dice"], "bet <amount>", "Take some risk and hopefully win some money!",
@@ -423,7 +436,7 @@ class Game(Category):
 
             embed = discord.Embed(
                 title="{}'s dice game :game_die:".format(message.author),
-                description=""
+                description="You bet **txc${}** and ".format(amount)
             ).add_field(
                 name="You rolled",
                 value="`{}`".format(player_roll)
@@ -433,12 +446,12 @@ class Game(Category):
             )
 
             if player_roll > toxic_roll:
-                embed.description = "You won **txc${}**!".format(multiplier(amount, player.data["stats"]["multi"]))
+                embed.description += "won **txc${}**!".format(multiplier(amount * 2, player.data["stats"]["multi"]))
                 embed.color = discord.Color.green()
                 embed.set_footer(text="stonks")
 
                 await player.gain_exp(random.randint(2, 5))
-                player.data["stats"]["txc"] += multiplier(amount, player.data["stats"]["multi"])
+                player.data["stats"]["txc"] += multiplier(amount * 2, player.data["stats"]["multi"])
             elif player_roll == toxic_roll:
                 embed.description = "Draw!"
                 embed.color = discord.Color.blue()
@@ -446,7 +459,7 @@ class Game(Category):
 
                 await player.gain_exp(2)
             else:
-                embed.description = "You lost **txc${}**!".format(amount)
+                embed.description += "lost **txc${}**!".format(amount)
                 embed.color = discord.Color.red()
                 embed.set_footer(text="sucks to be you lol.")
 

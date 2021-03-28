@@ -1,3 +1,5 @@
+import random
+
 from src.data import game_data
 from src.game import item
 
@@ -83,7 +85,18 @@ class Player:
         return True
 
     async def gain_exp(self, amount: int=1):
+        """
+        gives the player some exp.
+
+        :param amount: int
+        :return: None
+        """
+
         before = self.data["stats"]["exp"]
+
         self.data["stats"]["exp"] += amount
+        self.data["bank"]["max"] += amount * random.randint(10, 100)
+
         if before // 100 != self.data["stats"]["exp"] // 100:
+            self.data["bank"]["max"] += random.randint(500, 1000)
             await self.member.send("Ayy you leveled up to level {}!".format(self.data["stats"]["exp"] // 100))

@@ -15,25 +15,15 @@ class Toxic(discord.Client):
     """
 
     async def on_ready(self):
-        """
-        called when the bot is online and ready
-
-        :return: None
-        """
-
+        await self.change_presence(status=discord.Status.idle,
+                                   activity=discord.Activity(type=discord.ActivityType.playing,
+                                                             name="_help to get help noobs"))
         self.init_guilds()
 
         print('Logged in as {}'.format(self.user))
         logger.log("LOGIN")
 
     async def on_guild_join(self, guild: discord.Guild):
-        """
-        called when client joins a new guild
-
-        :param guild: Guild
-        :return: None
-        """
-
         self.init_single_guild(guild)
 
     async def on_member_join(self, member: discord.Member):
@@ -50,13 +40,6 @@ class Toxic(discord.Client):
             game_data.data[str(member.id)] = player_json_setup()
 
     async def on_message(self, message: discord.Message):
-        """
-        called when a message is sent by a user
-
-        :param message: Message
-        :return: None
-        """
-
         if message.author.bot or type(message.channel) is not discord.TextChannel:
             return
 
