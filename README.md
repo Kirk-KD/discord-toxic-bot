@@ -1,9 +1,11 @@
 # Toxic xD
-*This bot is still under development.*
+*Development started on Mar 11, 2021.*
+
+This bot is still under development.
 
 Ever wanted a (kinda) toxic bot for your server? You have found the one.
-This bot has a moderation & infractions system, gif & video search, and much more other fun stuff.
-Most of the commands are beautifully embedded, and new commands are constantly added!
+This bot has a built-in currency game, moderation & infractions system, gif & video search, and much more other fun stuff.
+Commands are beautifully embedded, and new commands are constantly added!
 I'm not sure when this bot will be published, but keep an eye out!
 
 ## Commands
@@ -48,7 +50,7 @@ aliases: **hammer**
 *Uncover a user's sins they are trying to hide. (or yourself)*  
 aliases: **infracs**, **sins**
 
-### Fun `Unfinished`  
+### Fun 
 - **8ball** *\<question\>*  
 *Having trouble deciding on something?*
 
@@ -61,5 +63,4 @@ aliases: **notjif**
 aliases: **yt**
 
 ---
-
-Bug or question? DM `Kirk_KD#1674` on discord or submit an issue here on Github!
+Bug, questions, or suggestions? DM `Kirk_KD#1674` on discord or submit an issue here on Github!
