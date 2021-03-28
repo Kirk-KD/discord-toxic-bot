@@ -262,7 +262,7 @@ class Game(Category):
     class Inventory(CooldownCommand):  # might need to add page system later
         def __init__(self):
             super().__init__(["inventory", "inv", "items"], "inventory [<user>]",
-                             "See the things you are somehow carrying all the time.", perms.EVERYONE, 3)
+                             "See the things you or other people are somehow carrying all the time.", perms.EVERYONE, 3)
 
         async def __call__(self, message, args, client):
             if not await self.check_cooldown(message):
@@ -389,6 +389,70 @@ class Game(Category):
                 if i == 9:
                     break
 
+            await message.reply(embed=embed, mention_author=False)
+
+    class Bet(CooldownCommand):
+        def __init__(self):
+            super().__init__(["bet", "dice"], "bet <amount>", "Take some risk and hopefully win some money!",
+                             perms.EVERYONE, 20)
+
+        async def __call__(self, message, args, client):
+            if not await self.check_cooldown(message):
+                return
+
+            if len(args) == 0 or (args[0].lower() != "all" and parse_int(args[0]) is None):
+                await message.reply("Hey tell me how much you want to bet, or `all` to bet everything.",
+                                    mention_author=False)
+                return
+
+            if parse_int(args[0]) == 0:
+                await message.reply("You can't bet nothing idiot.", mention_author=False)
+                return
+
+            player = manager.get_player(message.author)
+
+            if player.data["stats"]["txc"] == 0:
+                await message.reply("Lol your wallet is as empty as your head.", mention_author=False)
+                return
+
+            amount = min(
+                [parse_int(args[0]) if parse_int(args[0]) else player.data["stats"]["txc"], player.data["stats"]["txc"]]
+            )
+            player_roll = random.randint(1, 6)
+            toxic_roll = random.randint(1, 6)
+
+            embed = discord.Embed(
+                title="{}'s dice game :game_die:".format(message.author),
+                description=""
+            ).add_field(
+                name="You rolled",
+                value="`{}`".format(player_roll)
+            ).add_field(
+                name="Toxic rolled",
+                value="`{}`".format(toxic_roll)
+            )
+
+            if player_roll > toxic_roll:
+                embed.description = "You won **txc${}**!".format(multiplier(amount, player.data["stats"]["multi"]))
+                embed.color = discord.Color.green()
+                embed.set_footer(text="stonks")
+
+                await player.gain_exp(random.randint(2, 5))
+                player.data["stats"]["txc"] += multiplier(amount, player.data["stats"]["multi"])
+            elif player_roll == toxic_roll:
+                embed.description = "Draw!"
+                embed.color = discord.Color.blue()
+                embed.set_footer(text="lucky or unlucky?")
+
+                await player.gain_exp(2)
+            else:
+                embed.description = "You lost **txc${}**!".format(amount)
+                embed.color = discord.Color.red()
+                embed.set_footer(text="sucks to be you lol.")
+
+                player.data["stats"]["txc"] -= amount
+
+            game_data.update_data()
             await message.reply(embed=embed, mention_author=False)
 
 
