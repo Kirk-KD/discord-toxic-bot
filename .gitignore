@@ -1,6 +1,7 @@
 .env
 /venv
 /.idea
-/saved_data
+/data
+/emojis
 plans.txt
 **/__pycache__

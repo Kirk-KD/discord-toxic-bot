@@ -1,8 +1,7 @@
-import math
-
 from src.category import Category
 from src.command import CooldownCommand
 from src.data import game_data
+from src.emojis import item_emoji
 from src.game.game_manager import manager
 from src.game.shop import shop
 from src.handler import handler
@@ -19,6 +18,7 @@ class Game(Category):
     def __init__(self):
         super().__init__("Game", "A cross-server game with txc (toxic coin) as the currency!")
 
+    # currency
     class Beg(CooldownCommand):
         def __init__(self):
             super().__init__(
@@ -148,46 +148,6 @@ class Game(Category):
 
             game_data.update_data()
 
-    class UseItem(CooldownCommand):
-        def __init__(self):
-            super().__init__(["useitem", "use"], "useitem <item>", "Uses an item.", perms.EVERYONE, 3)
-
-        async def __call__(self, message, args, client):
-            if not await self.check_cooldown(message):
-                return
-
-            if len(args) == 0:
-                await message.reply("Lmao you need to tell me what item you want to use.", mention_author=False)
-                return
-
-            player = manager.get_player(message.author)
-            item = shop.get_item(args[0])
-            if not item:
-                await message.reply("Dude that item doesn't even exist what are you doing lol.", mention_author=False)
-                return
-
-            if not player.has_item(item):
-                await message.reply("Lel you are so funny you don't even have that item.", mention_author=False)
-                return
-
-            if player.has_effect(item):
-                await message.reply("Don't be so greedy, you already have that item's effect!", mention_author=False)
-                return
-
-            player.remove_item(item)
-            await player.gain_exp()
-            response = await item.use(player, message)
-            if response:
-                if type(response) is discord.Embed:
-                    await message.reply(embed=response, mention_author=False)
-                else:
-                    await message.reply(response, mention_author=False)
-
-            game_data.update_data()
-
-    # class Buy(CooldownCommand):
-    #     pass  # TODO: IMPLEMENT
-
     class Balance(CooldownCommand):
         def __init__(self):
             super().__init__(
@@ -202,6 +162,7 @@ class Game(Category):
             member = message.author if len(args) == 0 else parse_member(message.guild, args[0])
             if not member:
                 await message.reply("That user doesn't exist lol", mention_author=False)
+                return
 
             player = manager.get_player(member)
             embed = discord.Embed(
@@ -297,6 +258,74 @@ class Game(Category):
             await message.reply("Alright, **txc${}** withdrawn from the bank.".format(amount),
                                 mention_author=False)
 
+    # item
+    class Inventory(CooldownCommand):  # might need to add page system later
+        def __init__(self):
+            super().__init__(["inventory", "inv", "items"], "inventory [<user>]",
+                             "See the things you are somehow carrying all the time.", perms.EVERYONE, 3)
+
+        async def __call__(self, message, args, client):
+            if not await self.check_cooldown(message):
+                return
+
+            member = message.author if len(args) == 0 else parse_member(message.guild, args[0])
+            if not member:
+                await message.reply("That user doesn't exist lol", mention_author=False)
+                return
+
+            player = manager.get_player(member)
+
+            embed = discord.Embed(
+                title="{}'s Inventory :file_folder:".format(member),
+                description="There is literally nothing here lol." if len(player.data["inv"]) == 0 else "",
+                color=discord.Color.gold()
+            )
+
+            for name, amount in sorted(player.data["inv"].items()):
+                embed.description += "{} **{}** - {}\nID `{}`\n\n".format(
+                    item_emoji(name), name, amount, shop.get_item(name).reference_names[0]
+                )
+
+            await message.reply(embed=embed, mention_author=False)
+
+    class Use(CooldownCommand):
+        def __init__(self):
+            super().__init__(["use"], "use <item>", "Use an item.", perms.EVERYONE, 3)
+
+        async def __call__(self, message, args, client):
+            if not await self.check_cooldown(message):
+                return
+
+            if len(args) == 0:
+                await message.reply("Lmao you need to tell me what item you want to use.", mention_author=False)
+                return
+
+            player = manager.get_player(message.author)
+            item = shop.get_item(args[0])
+            if not item:
+                await message.reply("Dude that item doesn't even exist what are you doing lol.", mention_author=False)
+                return
+
+            if not player.has_item(item):
+                await message.reply("Lel you are so funny you don't even have that item.", mention_author=False)
+                return
+
+            if player.has_effect(item):
+                await message.reply("Don't be so greedy, you already have that item's effect!", mention_author=False)
+                return
+
+            player.remove_item(item)
+            await player.gain_exp()
+            response = await item.use(player, message)
+            if response:
+                if type(response) is discord.Embed:
+                    await message.reply(embed=response, mention_author=False)
+                else:
+                    await message.reply(response, mention_author=False)
+
+            game_data.update_data()
+
+    # info
     class Profile(CooldownCommand):
         def __init__(self):
             super().__init__(["profile", "level", "levels"], "profile [<user>]",
