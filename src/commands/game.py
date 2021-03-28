@@ -1,3 +1,5 @@
+import math
+
 from src.category import Category
 from src.command import CooldownCommand
 from src.data import game_data
@@ -35,12 +37,13 @@ class Game(Category):
                 "Big lizard", "That teacher who leaves extra homeworks for the weekends", "I", "you", "Wumpus",
                 "Dani Milkman", "Milkman Karlson", "Billy", "Billy's brother Willy", "Jacksepticeye",
                 "The soul who has been tortured by c++ for eternity", "Danny DeVito", "Danny DeYeeto",
-                "GrayStillPlays", "Github Cat"
+                "GrayStillPlays", "Github Cat", "linus"
             ]
 
-            if chance(60):
+            if chance(70):
                 amount = multiplier(int(random.triangular(15, 1000, 75)), player.data["stats"]["multi"])
                 player.data["stats"]["txc"] += amount
+                await player.gain_exp()
                 game_data.update_data()
 
                 embed = discord.Embed(
@@ -71,16 +74,17 @@ class Game(Category):
                 return
 
             player = manager.get_player(message.author)
-            if chance(70):
+            if chance(75):
                 if chance(7):
                     amount = weighted_choice([(1, 0.92), (2, 0.06), (3, 0.02)])
                     item = shop.get_item(weighted_choice([
                         ("Apple",       0.4),
                         ("Coffee",      0.3),
-                        ("Chocolate",   0.2),
-                        ("Toxic Water", 0.1)
+                        ("Chocolate",   0.215),
+                        ("Toxic Water", 0.085)
                     ]))
                     player.give_item(item, amount)
+                    await player.gain_exp(2)
 
                     embed = discord.Embed(
                         title="You searched around...",
@@ -93,6 +97,7 @@ class Game(Category):
                 else:
                     amount = multiplier(int(random.triangular(10, 110, 50)), player.data["stats"]["multi"])
                     player.data["stats"]["txc"] += amount
+                    await player.gain_exp()
 
                     embed = discord.Embed(
                         title="You searched around...",
@@ -103,7 +108,7 @@ class Game(Category):
                     )
                     await message.reply(embed=embed, mention_author=False)
             else:
-                if chance(90):
+                if chance(97):
                     embed = discord.Embed(
                         title="You searched around...",
                         description="...and found NOTHING lmao",
@@ -117,12 +122,12 @@ class Game(Category):
                     await message.author.send(
                         "Lmao you died noob. Buy some Toxic Water in the shop to save yourself next time!"
                         if killed else
-                        "You drank th Toxic Water at the last second before you die, and it saved you!"
+                        "You drank the Toxic Water at the last second before you die, and it saved you!"
                     )
 
                     death_options = [
                         "You were hit by a car while searching in the middle of a street LMAO r u dumb?",
-                        "Lol you wasn't looking where you are going and fell in a sewer and died.",
+                        "Lol you wasn't looking where you were going and fell in a sewer and died.",
                         "Wow you searched all the way to Area51! And guess what? You were also shot in the head!",
                         "You did an unintentional science experiment about gravity."
                         "(Basically you fell down a cliff lol)",
@@ -170,6 +175,7 @@ class Game(Category):
                 return
 
             player.remove_item(item)
+            await player.gain_exp()
             response = await item.use(player, message)
             if response:
                 if type(response) is discord.Embed:
@@ -212,6 +218,112 @@ class Game(Category):
             ).add_field(
                 name="Total",
                 value=":dollar: `txc${}`".format(player.data["stats"]["txc"] + player.data["bank"]["curr"]),
+                inline=False
+            )
+
+            await message.reply(embed=embed, mention_author=False)
+
+    class Deposit(CooldownCommand):
+        def __init__(self):
+            super().__init__(["deposit", "dep"], "deposit <amount or \"all\">",
+                             "Put your money in the bank so you don't lose EVERYTHING when you die.",
+                             perms.EVERYONE, 3)
+
+        async def __call__(self, message, args, client):
+            if not await self.check_cooldown(message):
+                return
+
+            if len(args) == 0 or (args[0].lower() != "all" and parse_int(args[0]) is None):
+                await message.reply("Hey tell me how much you want to deposit, or `all` to deposit all.",
+                                    mention_author=False)
+                return
+
+            if parse_int(args[0]) == 0:
+                await message.reply("You can't deposit nothing, stop trying to break me.", mention_author=False)
+                return
+
+            player = manager.get_player(message.author)
+
+            if player.data["stats"]["txc"] == 0:
+                await message.reply("Lol your wallet is as empty as your head.", mention_author=False)
+                return
+
+            amount = min([
+                player.data["bank"]["max"] - player.data["bank"]["curr"],
+                player.data["stats"]["txc"],
+                parse_int(args[0]) if parse_int(args[0]) else player.data["stats"]["txc"]
+            ])
+
+            if player.data["bank"]["max"] - player.data["bank"]["curr"] == 0:
+                await message.reply("Your bank is already maxed out!", mention_author=False)
+                return
+
+            player.data["bank"]["curr"] += amount
+            player.data["stats"]["txc"] -= amount
+            game_data.update_data()
+
+            await message.reply("Alright, **txc${}** deposited safely into the bank.".format(amount),
+                                mention_author=False)
+
+    class Withdraw(CooldownCommand):
+        def __init__(self):
+            super().__init__(["withdraw", "with"], "withdraw <amount or \"all\">",
+                             "Take some money out from the bank to spend!", perms.EVERYONE, 3)
+
+        async def __call__(self, message, args, client):
+            if not await self.check_cooldown(message):
+                return
+
+            if len(args) == 0 or (args[0].lower() != "all" and parse_int(args[0]) is None):
+                await message.reply("Hey tell me how much you want to withdraw, or `all` to withdraw everything.",
+                                    mention_author=False)
+                return
+
+            if parse_int(args[0]) == 0:
+                await message.reply("You can't withdraw nothing, stop trying to break me.", mention_author=False)
+                return
+
+            player = manager.get_player(message.author)
+
+            amount = min([
+                player.data["bank"]["curr"],
+                parse_int(args[0]) if parse_int(args[0]) else player.data["bank"]["curr"]
+            ])
+
+            player.data["stats"]["txc"] += amount
+            player.data["bank"]["curr"] -= amount
+            game_data.update_data()
+
+            await message.reply("Alright, **txc${}** withdrawn from the bank.".format(amount),
+                                mention_author=False)
+
+    class Profile(CooldownCommand):
+        def __init__(self):
+            super().__init__(["profile", "level", "levels"], "profile [<user>]",
+                             "See yours or other people's stats!", perms.EVERYONE, 3)
+
+        async def __call__(self, message, args, client):
+            if not await self.check_cooldown(message):
+                return
+
+            member = message.author if len(args) == 0 else parse_member(message.guild, args[0])
+            if not member:
+                await message.reply("That user doesn't exist lol", mention_author=False)
+
+            player = manager.get_player(member)
+            tot_exp = player.data["stats"]["exp"]
+            exp = tot_exp % 100
+
+            embed = discord.Embed(
+                title="{}'s Profile :page_with_curl:".format(member),
+                color=discord.Color.gold()
+            ).add_field(
+                name="Level {}".format(tot_exp // 100),
+                value="[{}{}] {}%".format(
+                    "■" * (n := exp // 5),
+                    "□" * (20 - n),
+                    exp
+                ),
                 inline=False
             )
 

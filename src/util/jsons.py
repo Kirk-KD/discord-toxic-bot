@@ -1,5 +1,3 @@
-import random
-
 from src.util.time import *
 
 import json
@@ -103,7 +101,6 @@ def player_json_setup():
     return {
         "stats": {
             "txc": 1000,
-            "level": 0,
             "exp": 0,
             "multi": 0
         },

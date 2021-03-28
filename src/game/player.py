@@ -81,3 +81,9 @@ class Player:
         self.data["effects"] = []
 
         return True
+
+    async def gain_exp(self, amount: int=1):
+        before = self.data["stats"]["exp"]
+        self.data["stats"]["exp"] += amount
+        if before // 100 != self.data["stats"]["exp"] // 100:
+            await self.member.send("Ayy you leveled up to level {}!".format(self.data["stats"]["exp"] // 100))

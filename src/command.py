@@ -38,8 +38,8 @@ class CooldownCommand(Command):
         self.users = {}
 
     async def check_cooldown(self, message):
-        if perm_check(message.author, GLOBAL_DEV):  # dev bypass cooldown
-            return True
+        # if perm_check(message.author, GLOBAL_DEV):  # dev bypass cooldown
+        #     return True
         self.users[message.author.id] = (self.users[message.author.id]
                                          if message.author.id in self.users.keys()
                                          else datetime.datetime.now())
