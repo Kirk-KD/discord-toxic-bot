@@ -32,9 +32,9 @@ class Shop:
                              "Eating this wonderful thing will give you a random amount of EXP!",
                              30000, True, True, True)
 
-        def use(self, player, message=None):
+        async def use(self, player, message=None):
             exp = round(random.triangular(1, 100, 60))
-            player.data["stats"]["exp"] += exp
+            await player.gain_exp(exp)
 
             return discord.Embed(
                 title="You shoved a whole chocolate bar in your mouth!",

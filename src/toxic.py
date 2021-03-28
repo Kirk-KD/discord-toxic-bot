@@ -87,5 +87,6 @@ class Toxic(discord.Client):
 
                 if str(member.id) not in game_data.data.keys():
                     game_data.data[str(member.id)] = player_json_setup()
+                    game_data.data[str(member.id)]["effects"] = []  # needs to find a better way later
 
         game_data.update_data()
