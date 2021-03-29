@@ -1,3 +1,6 @@
+from src.emojis import item_emoji
+
+
 class Item:
     """
     an item in the game.
@@ -28,3 +31,8 @@ class Item:
             raise NotImplementedError("You forgot to implement this item IDIOT.")
         else:
             return "You can't use this item lol."
+
+    def __str__(self):
+        return "{} {}".format(
+            item_emoji(self.display_name), self.display_name
+        )

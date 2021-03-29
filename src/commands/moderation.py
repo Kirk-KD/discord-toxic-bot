@@ -388,6 +388,7 @@ class Moderation(Category):
                 return
 
             await message.guild.unban(member)
+            guilds_data.set_data("{}/members/{}/banned".format(message.guild.id, member_id), False)
 
             embed = discord.Embed(
                 title="Unban",
@@ -406,7 +407,7 @@ class Moderation(Category):
     class Infractions(Command):
         def __init__(self):
             super().__init__(
-                ["sins", "infracs"], "infractions [<user>]",
+                ["infractions", "sins", "infracs"], "infractions [<user>]",
                 "Uncover a user's sins they are trying to hide. (or yourself)", perms.MODS
             )
 
