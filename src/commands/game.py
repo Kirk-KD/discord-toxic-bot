@@ -44,7 +44,6 @@ class Game(Category):
                 amount = multiplier(int(random.triangular(15, 1000, 75)), player.data["stats"]["multi"])
                 player.data["stats"]["txc"] += amount
                 await player.gain_exp()
-                game_data.update_data()
 
                 embed = discord.Embed(
                     title="Got 'em",
@@ -64,6 +63,8 @@ class Game(Category):
                     color=discord.Color.red()
                 ).set_footer(text="stonkn't :(")
                 await message.reply(embed=embed, mention_author=False)
+
+            game_data.update_data()
 
     class Search(CooldownCommand):
         def __init__(self):
@@ -88,7 +89,7 @@ class Game(Category):
 
                     embed = discord.Embed(
                         title="You searched around...",
-                        description="...and found {} **{}**!".format(amount, item.display_name),
+                        description="...and found {} **{}**!".format(amount, item),
                         color=discord.Color.green()
                     ).set_footer(
                         text="That's some sharp eyes bro"
@@ -259,6 +260,56 @@ class Game(Category):
                                 mention_author=False)
 
     # item
+    class Shop(CooldownCommand):
+        def __init__(self):
+            super().__init__(["shop"], "shop [<item>]", "Visit the shop or show detail of an item!",
+                             perms.EVERYONE, 3)
+
+        async def __call__(self, message, args, client):
+            if not await self.check_cooldown(message):
+                return
+
+            if len(args) == 0:
+                embed = discord.Embed(
+                    title="The Toxic Shop",
+                    description="",
+                    color=discord.Color.gold()
+                )
+                for item in shop.items:
+                    embed.description += "**{}** - txc${}\n*{}*\n\n".format(
+                        item,
+                        str(item.price) + (" *(not purchasable)*" if not item.is_purchasable else ""),
+                        item.description
+                    )
+
+                await message.reply(embed=embed, mention_author=False)
+            else:
+                item = shop.get_item(" ".join(args[0:]))
+                if not item:
+                    await message.reply("Lel that item doesn't exist stupid.", mention_author=False)
+                    return
+
+                embed = discord.Embed(
+                    title=item.display_name,
+                    description=item.description,
+                    color=discord.Color.gold()
+                ).add_field(
+                    name="Price",
+                    value="txc${}".format(item.price),
+                    inline=False
+                ).add_field(
+                    name="Purchasable?",
+                    value=":white_check_mark:" if item.is_purchasable else ":x:"
+                ).add_field(
+                    name="Sellable?",
+                    value=":white_check_mark:" if item.is_sellable else ":x:"
+                ).add_field(
+                    name="Usable?",
+                    value=":white_check_mark:" if item.is_usable else ":x:"
+                )
+
+                await message.reply(embed=embed, mention_author=False)
+
     class Inventory(CooldownCommand):  # might need to add page system later
         def __init__(self):
             super().__init__(["inventory", "inv", "items"], "inventory [<user>]",

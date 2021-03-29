@@ -85,7 +85,7 @@ class Shop:
         """
 
         for item_ in self.items:
-            if name in [item_.display_name] + item_.reference_names:
+            if name.lower() in [item_.display_name.lower()] + item_.reference_names:
                 return item_
 
         return None

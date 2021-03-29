@@ -1,8 +1,7 @@
-import discord
-
 emojis = {
     "Apple":        825745714608340992,
-    "Chocolate":    825745748829929493
+    "Chocolate":    825745748829929493,
+    "Coffee":       825876525655916564
 }
 
 
