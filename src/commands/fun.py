@@ -29,8 +29,7 @@ class Fun(Category):
                 "Yes.", "No.", "Yeah!", "Nah.", "Definitely.", "Of course not.", "Ask again later.", "Very much yes.",
                 "My creator says yes.", "My creator says no.", "Yes imo.", "Maybe...", "Very likely, yes",
                 "Very doubtful.", "Don't count on it tho.", "Certainly!", "Better not tell u :smirk:",
-                "You may regret it later tho...", "You'd better not get your hopes up.",
-                "as long as you keep it a secret.", "nah."
+                "You'd better not get your hopes up.", "as long as you keep it a secret.", "nah."
             ]
             await message.reply(":8ball: {}".format(random.choice(responses)), mention_author=False)
 

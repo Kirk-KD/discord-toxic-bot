@@ -28,6 +28,7 @@ class Toxic(discord.Client):
         game_data.update_data()
 
         print('Logged in as {}'.format(self.user))
+        logger.write_line("=" * 100)
         logger.log("LOGIN")
 
     async def on_guild_join(self, guild: discord.Guild):
