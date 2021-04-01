@@ -1,7 +1,7 @@
 from src.category import Category
 from src.command import CooldownCommand
 from src.data import game_data
-from src.emojis import item_emoji
+from src.emojis import item_emoji, item_image, emojis
 from src.game.game_manager import manager
 from src.game.shop import shop
 from src.handler import handler
@@ -58,8 +58,8 @@ class Game(Category):
                     title="No one cares",
                     description="**{}** walked right pass you and "
                                 "didn't waste their money on someone like you lol".format(
-                                    random.choice(characters)
-                                ),
+                        random.choice(characters)
+                    ),
                     color=discord.Color.red()
                 ).set_footer(text="stonkn't :(")
                 await message.reply(embed=embed, mention_author=False)
@@ -79,9 +79,9 @@ class Game(Category):
                 if chance(7):
                     amount = weighted_choice([(1, 0.92), (2, 0.06), (3, 0.02)])
                     item = shop.get_item(weighted_choice([
-                        ("Apple",       0.4),
-                        ("Coffee",      0.3),
-                        ("Chocolate",   0.215),
+                        ("Apple", 0.4),
+                        ("Coffee", 0.3),
+                        ("Chocolate", 0.215),
                         ("Toxic Water", 0.085)
                     ]))
                     player.give_item(item, amount)
@@ -259,6 +259,72 @@ class Game(Category):
             await message.reply("Alright, **txc${}** withdrawn from the bank.".format(amount),
                                 mention_author=False)
 
+    class Give(CooldownCommand):
+        def __init__(self):
+            super().__init__(["give", "share"], "give <user> <amount> [<item>]",
+                             "Give money or items to other people!", perms.EVERYONE, 5)
+
+        async def __call__(self, message, args, client):
+            if len(args) < 1:
+                await message.reply("Lel who are you giving stuff to idiot.", mention_author=False)
+                return
+
+            if len(args) < 2:
+                await message.reply("How much money or items do you want to give them lol.", mention_author=False)
+                return
+
+            player = manager.get_player(message.author)
+            target = manager.get_player(parse_member(message.guild, args[0]))
+            amount = parse_int(args[1])
+
+            if not target:
+                await message.reply("Alright tell your non-existing friend I said hello.", mention_author=False)
+                return
+
+            if not amount or amount == 0:
+                await message.reply("Um I think I need a valid number, maybe???", mention_author=False)
+                return
+
+            if len(args) >= 3:
+                item_name = " ".join(args[2:])
+                item = shop.get_item(item_name)
+
+                if not item:
+                    await message.reply("That item doesn't exist, stop making stuff up.", mention_author=False)
+                    return
+
+                if not player.has_item(item) or player.data["inv"][item.display_name] < amount:
+                    await message.reply("You don't have enough to give lol.", mention_author=False)
+                    return
+
+                player.remove_item(item, amount)
+                target.give_item(item, amount)
+                embed = discord.Embed(
+                    title="You gave {} {} **{}**!".format(target.member, amount, item),
+                    description="You gave {} {} **{}**, now you have **{}**.".format(
+                        target.member, amount, item, (player.data["inv"][item.display_name] if
+                                                      item.display_name in player.data["inv"].keys() else "0")
+                    ),
+                    color=discord.Color.green()
+                )
+            else:
+                if player.data["stats"]["txc"] < amount:
+                    await message.reply("You don't have enough to give lol.", mention_author=False)
+                    return
+
+                player.data["stats"]["txc"] -= amount
+                target.data["stats"]["txc"] += amount
+                embed = discord.Embed(
+                    title="You gave {} **txc${}**!".format(target.member, amount),
+                    description="You gave {} **txc${}**, now you have **txc${}**.".format(
+                        target.member, amount, player.data["stats"]["txc"]
+                    ),
+                    color=discord.Color.green()
+                )
+
+            game_data.update_data()
+            await message.reply(embed=embed, mention_author=False)
+
     # item
     class Shop(CooldownCommand):
         def __init__(self):
@@ -306,9 +372,12 @@ class Game(Category):
                 ).add_field(
                     name="Usable?",
                     value=":white_check_mark:" if item.is_usable else ":x:"
+                ).set_thumbnail(
+                    url="attachment://g_{}.png".format(item.display_name.lower().replace(" ", "_") if
+                                                       item.display_name in emojis.keys() else "place_holder")
                 )
 
-                await message.reply(embed=embed, mention_author=False)
+                await message.reply(file=item_image(item.display_name), embed=embed, mention_author=False)
 
     class Inventory(CooldownCommand):  # might need to add page system later
         def __init__(self):

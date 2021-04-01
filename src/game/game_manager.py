@@ -12,7 +12,7 @@ class GameManager:
         if str(member.id) in game_data.data.keys():
             return player.Player(member)
 
-        raise KeyError("Player not registered in game_data!")  # shouldn't reach here
+        return None
 
 
 manager = GameManager()
