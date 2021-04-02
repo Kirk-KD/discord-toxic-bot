@@ -14,14 +14,14 @@ class Stock:
     def update(self):
         g = self.gbm()
         self.record.append(g)
-        if len(self.record) > 120:
+        if len(self.record) > self.max_record:
             self.record.pop(0)
 
         self.save_graph()
         return g
 
     def save_graph(self):
-        marker_type = ("-s" if self.record[-1] == self.record[-2] else
+        marker_type = ("->" if self.record[-1] == self.record[-2] else
                        ("-^" if self.record[-1] >= self.record[-2] else "-v"))
         plt.plot(self.record, marker_type, markevery=[len(self.record) - 1])
         plt.savefig("stock_graphs/{}.png".format(self.name.lower().replace(" ", "_")))
@@ -39,4 +39,3 @@ def create_gbm(s0, mu, sigma):
         return round(st)
 
     return generate_value
-

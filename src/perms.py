@@ -35,12 +35,12 @@ def perm_check(member: discord.Member, perm: int):
         if member.id == member.guild.owner_id:
             return True
         for role in member.roles:
-            if str(role.id) in guilds_data.get_data("{}/settings/perm_ids/owner".format(str(member.guild.id))):
+            if role.id in guilds_data.get_data("{}/settings/perm_ids/owner".format(str(member.guild.id))):
                 return True
 
     if perm <= 1:  # moderators
         for role in member.roles:
-            if str(role.id) in guilds_data.get_data("{}/settings/perm_ids/mod".format(str(member.guild.id))):
+            if role.id in guilds_data.get_data("{}/settings/perm_ids/mod".format(str(member.guild.id))):
                 return True
 
     return False

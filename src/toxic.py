@@ -1,7 +1,7 @@
-from src.game.stocks_collection import stocks
 from src.handler import handler
 from src.data import *
 from src.logger import logger
+from src.game.stocks_collection import stocks
 
 from src.util.jsons import *
 from src.game.game_manager import manager
@@ -24,6 +24,7 @@ class Toxic(discord.Client):
             )
         )
 
+        self.init_data()
         self.init_guilds()
         self.init_stocks()
         guilds_data.update_data()
@@ -81,6 +82,18 @@ class Toxic(discord.Client):
             ))
 
         traceback.print_exc()
+
+    def init_data(self):
+        if "stocks" not in game_data.data.keys():
+            game_data.data["stocks"] = {
+                "Toxic": [],
+                "Acid": [],
+                "xD Coffee": [],
+                "Roll of Rick": [],
+                "Guthib Dog": []
+            }
+        if "players" not in game_data.data.keys():
+            game_data.data["players"] = {}
 
     def init_guilds(self):
         for guild in self.guilds:
