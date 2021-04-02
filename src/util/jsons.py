@@ -98,6 +98,8 @@ def player_json_setup():
     :return: dict
     """
 
+    from src.game.stocks_collection import stocks
+
     return {
         "stats": {
             "txc": 1000,
@@ -109,5 +111,6 @@ def player_json_setup():
             "curr": 0
         },
         "inv": {},
-        "effects": []
+        "effects": [],
+        "stocks": {name: 0 for name in stocks.data.keys()}
     }

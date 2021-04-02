@@ -1,6 +1,15 @@
 from src.data import game_data
 from src.game.stock import Stock
 
+if "stocks" not in game_data.data.keys():
+    game_data.data["stocks"] = {
+        "Toxic": [],
+        "Acid": [],
+        "xD Coffee": [],
+        "Roll of Rick": [],
+        "Guthib Dog": []
+    }
+
 
 class StocksCollection:
     def __init__(self):

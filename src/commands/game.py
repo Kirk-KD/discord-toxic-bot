@@ -5,6 +5,7 @@ from src.emojis import item_emoji, item_image, emojis
 from src.game.game_manager import manager
 from src.game.shop import shop
 from src.handler import handler
+from src.game.stocks_collection import stocks
 from src import perms
 
 from src.util.game import *
@@ -41,7 +42,7 @@ class Game(Category):
             ]
 
             if chance(70):
-                amount = multiplier(int(random.triangular(15, 1000, 75)), player.data["stats"]["multi"])
+                amount = multiplier(int(random.triangular(15, 500, 75)), player.data["stats"]["multi"])
                 player.data["stats"]["txc"] += amount
                 await player.gain_exp()
 
@@ -274,16 +275,20 @@ class Game(Category):
                 return
 
             player = manager.get_player(message.author)
-            target = manager.get_player(parse_member(message.guild, args[0]))
+            target_member = parse_member(message.guild, args[0])
             amount = parse_int(args[1])
 
-            if not target:
-                await message.reply("Alright tell your non-existing friend I said hello.", mention_author=False)
+            if not target_member:
+                await message.reply("Alright tell your non-existing friend \"{}\" I said hello.".format(
+                    args[0]
+                ), mention_author=False)
                 return
 
             if not amount or amount == 0:
                 await message.reply("Um I think I need a valid number, maybe???", mention_author=False)
                 return
+
+            target = manager.get_player(target_member)
 
             if len(args) >= 3:
                 item_name = " ".join(args[2:])
@@ -295,6 +300,11 @@ class Game(Category):
 
                 if not player.has_item(item) or player.data["inv"][item.display_name] < amount:
                     await message.reply("You don't have enough to give lol.", mention_author=False)
+                    return
+
+                if target_member == message.author:
+                    await message.reply("Um ok? You gave yourself {} **{}**. And?".format(amount, item),
+                                        mention_author=False)
                     return
 
                 player.remove_item(item, amount)
@@ -310,6 +320,11 @@ class Game(Category):
             else:
                 if player.data["stats"]["txc"] < amount:
                     await message.reply("You don't have enough to give lol.", mention_author=False)
+                    return
+
+                if target_member == message.author:
+                    await message.reply("Um ok? You gave yourself **txc${}**. And?".format(amount),
+                                        mention_author=False)
                     return
 
                 player.data["stats"]["txc"] -= amount
@@ -587,6 +602,135 @@ class Game(Category):
 
             game_data.update_data()
             await message.reply(embed=embed, mention_author=False)
+
+    class Stocks(CooldownCommand):
+        def __init__(self):
+            super().__init__(["stocks", "stock", "stonks", "stonk"],
+                             "stocks [(\"buy\" or \"sell\" or \"view\") <stock>]",
+                             "They say you could become a rich boi doing this.", perms.EVERYONE, 5)
+
+        async def __call__(self, message, args, client):
+            player = manager.get_player(message.author)
+
+            if len(args) == 0:
+                embed = discord.Embed(
+                    title=":chart_with_downwards_trend: Stocks :chart_with_upwards_trend:",
+                    description="`stocks buy <amount> <name>` to buy\n"
+                                "`stocks sell <amount> <name>` to sell\n"
+                                "`stocks view <name>` to view growth",
+                    color=discord.Color.blue()
+                )
+
+                for name in stocks.data.keys():
+                    stock = stocks.get_stock(name)
+                    embed.add_field(
+                        name=name + " `{} owned`".format(player.data["stocks"][stock.name]),
+                        value="**txc${}**".format(stock.current) + (
+                            " :chart_with_upwards_trend:" if stock.record[-1] > stock.record[-2] else
+                            (" :chart_with_downwards_trend:" if stock.record[-1] < stock.record[-2] else "")
+                        ),
+                        inline=False
+                    )
+
+                await message.reply(embed=embed, mention_author=False)
+            else:
+                if args[0].lower() == "view":
+                    if len(args) < 2:
+                        await message.reply("Which stock do you want to see dummy?", mention_author=False)
+                        return
+
+                    stock = stocks.get_stock(" ".join(args[1:]))
+                    if not stock:
+                        await message.reply("That stock literally doesn't exist.", mention_author=False)
+                        return
+
+                    embed = discord.Embed(
+                        title="{} stock".format(stock.name),
+                        description="Stocks update every hour. Showing previous 3 days.",
+                        color=discord.Color.blue()
+                    ).set_image(
+                        url="attachment://{}.png".format(stock.name.lower().replace(" ", "_"))
+                    )
+
+                    await message.reply(file=discord.File(
+                        "stock_graphs/{}.png".format(stock.name.lower().replace(" ", "_"))
+                    ), embed=embed, mention_author=False)
+
+                elif args[0].lower() == "buy":
+                    if len(args) < 2:
+                        await message.reply("How many do you want to buy idiot.", mention_author=False)
+                        return
+
+                    amount = parse_int(args[1])
+                    if not amount:
+                        await message.reply("Invalid number lel.", mention_author=False)
+                        return
+
+                    if len(args) < 3:
+                        await message.reply("Which stock do you want to buy idiot.", mention_author=False)
+                        return
+
+                    stock = stocks.get_stock(" ".join(args[2:]))
+                    if not stock:
+                        await message.reply("Invalid stock name lel.", mention_author=False)
+                        return
+
+                    price = amount * stock.current
+                    if price > player.data["stats"]["txc"]:
+                        await message.reply("Lol you can't even afford it.", mention_author=False)
+                        return
+
+                    player.data["stats"]["txc"] -= price
+                    player.data["stocks"][stock.name] += amount
+                    game_data.update_data()
+
+                    embed = discord.Embed(
+                        title=":chart_with_downwards_trend: Stock Purchase :chart_with_upwards_trend:",
+                        description="You purchased {} **{}** stock for **txc${}**".format(
+                            amount, stock.name, price
+                        ),
+                        color=discord.Color.green()
+                    ).set_footer(
+                        text="future stonks?"
+                    )
+
+                    await message.reply(embed=embed, mention_author=False)
+
+                elif args[0].lower() == "sell":
+                    if len(args) < 2:
+                        await message.reply("How many do you want to sell idiot.", mention_author=False)
+                        return
+
+                    amount = parse_int(args[1])
+                    if not amount:
+                        await message.reply("Invalid number lel.", mention_author=False)
+                        return
+
+                    if len(args) < 3:
+                        await message.reply("Which stock do you want to sell idiot.", mention_author=False)
+                        return
+
+                    stock = stocks.get_stock(" ".join(args[2:]))
+                    if not stock:
+                        await message.reply("Invalid stock name lel.", mention_author=False)
+                        return
+
+                    if player.data["stocks"][stock.name] < amount:
+                        await message.reply("Lol you don't have enough. Stop day dreaming.", mention_author=False)
+                        return
+
+                    player.data["stocks"][stock.name] -= amount
+                    player.data["stats"]["txc"] += max(stock.current * amount, 1)
+                    game_data.update_data()
+
+                    embed = discord.Embed(
+                        title=":chart_with_downwards_trend: Stock Trade :chart_with_upwards_trend:",
+                        description="You sold {} **{}** stock for **txc${}**!".format(
+                            amount, stock.name, max(stock.current * amount, 1)
+                        ),
+                        color=discord.Color.blue()
+                    )
+                    await message.reply(embed=embed, mention_author=False)
 
 
 handler.add_category(Game)
