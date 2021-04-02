@@ -9,7 +9,7 @@ class GameManager:
         pass
 
     def get_player(self, member: discord.Member):
-        if str(member.id) in game_data.data.keys():
+        if str(member.id) in game_data.data["players"].keys():
             return player.Player(member)
 
         return None

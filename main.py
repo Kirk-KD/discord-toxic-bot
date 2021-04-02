@@ -3,7 +3,8 @@ from src.commands import (
     utilities,
     moderation,
     fun,
-    game
+    game,
+    dev
 )
 
 import discord

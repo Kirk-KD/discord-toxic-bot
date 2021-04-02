@@ -11,7 +11,7 @@ from src.game.shop import shop
 class Player:
     def __init__(self, member: discord.Member):
         self.member = member
-        self.data = game_data.data[str(self.member.id)]
+        self.data = game_data.data["players"][str(self.member.id)]
 
     def has_item(self, item_: item.Item):
         """

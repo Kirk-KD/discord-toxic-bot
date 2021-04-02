@@ -1,3 +1,4 @@
+from src.game.stocks_collection import stocks
 from src.handler import handler
 from src.data import *
 from src.logger import logger
@@ -24,6 +25,7 @@ class Toxic(discord.Client):
         )
 
         self.init_guilds()
+        self.init_stocks()
         guilds_data.update_data()
         game_data.update_data()
 
@@ -93,9 +95,13 @@ class Toxic(discord.Client):
                     guilds_data.data[str(guild.id)]["members"][str(member.id)] = member_json_setup()
 
                 if not manager.get_player(member):
-                    game_data.data[str(member.id)] = player_json_setup()
+                    game_data.data["players"][str(member.id)] = player_json_setup()
 
-                game_data.data[str(member.id)]["effects"] = []  # needs to find a better way later
+                game_data.data["players"][str(member.id)]["effects"] = []  # needs to find a better way later
 
         guilds_data.update_data()
+        game_data.update_data()
+
+    def init_stocks(self):
+        stocks.update()
         game_data.update_data()

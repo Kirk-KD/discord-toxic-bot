@@ -284,6 +284,9 @@ class Utilities(Category):
 
                 i = 0
                 for category in handler.categories:
+                    if category.hidden:
+                        continue
+
                     i += 1
                     embed.add_field(
                         name=category.name,

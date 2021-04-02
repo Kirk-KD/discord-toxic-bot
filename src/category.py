@@ -2,10 +2,11 @@ import inspect
 
 
 class Category:
-    def __init__(self, name: str, description: str):
+    def __init__(self, name: str, description: str, hidden: bool = False):
         self.name = name
         self.description = description
         self.commands = []
+        self.hidden = hidden
 
         command_names = [command_name for command_name in dir(self) if not command_name.startswith("__")]
 
