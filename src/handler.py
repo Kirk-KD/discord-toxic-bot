@@ -43,7 +43,7 @@ class Handler:
 
     def get_category(self, name: str):
         for category in self.categories:
-            if category.name.lower() == name.lower():
+            if category.name.lower() == name.lower() and not category.hidden:
                 return category
 
         return None

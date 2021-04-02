@@ -3,6 +3,7 @@
 /.idea
 /data
 /emojis
+/stock_graphs
 plans.txt
 logs.txt
 **/__pycache__
