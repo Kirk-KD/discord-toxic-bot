@@ -1,6 +1,8 @@
 import random
 from math import exp, sqrt
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
+from matplotlib.ticker import MaxNLocator
 
 
 class Stock:
@@ -23,9 +25,13 @@ class Stock:
     def save_graph(self):
         marker_type = ("->" if self.record[-1] == self.record[-2] else
                        ("-^" if self.record[-1] >= self.record[-2] else "-v"))
-        plt.plot(self.record, marker_type, markevery=[len(self.record) - 1])
-        plt.savefig("stock_graphs/{}.png".format(self.name.lower().replace(" ", "_")))
-        plt.close("all")
+
+        fg = Figure()
+        ax = fg.gca()
+        ax.plot(self.record, marker_type, markevery=[len(self.record) - 1])
+        ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+
+        fg.savefig("stock_graphs/{}.png".format(self.name.lower().replace(" ", "_")))
 
 
 # https://towardsdatascience.com/create-a-stock-price-simulator-with-python-b08a184f197d
@@ -35,7 +41,10 @@ def create_gbm(s0, mu, sigma):
     def generate_value():
         nonlocal st
 
-        st *= exp((mu - 0.5 * sigma ** 2) * (1. / 365.) + sigma * sqrt(1. / 365.) * random.gauss(mu=0, sigma=1))
+        st *= exp(
+            (mu - 0.5 * sigma ** 2) * (1. / 365.) + sigma * sqrt(1. / 365.)
+            * random.gauss(mu=0.001, sigma=random.triangular(1, 5, 1))
+        )
         return round(st)
 
     return generate_value

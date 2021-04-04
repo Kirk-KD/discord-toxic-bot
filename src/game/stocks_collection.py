@@ -24,7 +24,8 @@ class StocksCollection:
         """
 
         for key, val in self.data.items():
-            if name.lower().replace(" ", "") == key.lower().replace(" ", ""):
+            if (name.lower().replace(" ", "") == key.lower().replace(" ", "") or
+                    name.lower().split()[0] == key.lower().split()[0]):
                 return Stock(key, val)
 
         return None

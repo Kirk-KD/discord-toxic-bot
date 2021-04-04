@@ -23,7 +23,17 @@ class Player:
 
         return item_.display_name in self.data["inv"].keys()
 
-    def give_item(self, item_: item.Item, amount: int=1):
+    def count_item(self, item_: item.Item):
+        """
+        returns the amount of item the player has.
+
+        :param item_: Item
+        :return: int
+        """
+
+        return 0 if not self.has_item(item_) else self.data["inv"][item_.display_name]
+
+    def give_item(self, item_: item.Item, amount: int = 1):
         """
         gives an amount of item to the player.
 
@@ -37,7 +47,7 @@ class Player:
         else:
             self.data["inv"][item_.display_name] = amount
 
-    def remove_item(self, item_: item.Item, amount: int=1):
+    def remove_item(self, item_: item.Item, amount: int = 1):
         """
         removes an amount of item form the player and returns the amount of items removed.
 
@@ -84,7 +94,7 @@ class Player:
 
         return True
 
-    async def gain_exp(self, amount: int=1):
+    async def gain_exp(self, amount: int = 1):
         """
         gives the player some exp.
 
@@ -100,3 +110,6 @@ class Player:
         if before // 100 != self.data["stats"]["exp"] // 100:
             self.data["bank"]["max"] += random.randint(500, 1000)
             await self.member.send("Ayy you leveled up to level {}!".format(self.data["stats"]["exp"] // 100))
+
+    def multiplier(self, amount: int):
+        return amount + round(amount * (self.data["stats"]["multi"] / 100))
