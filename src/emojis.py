@@ -4,7 +4,8 @@ emojis = {
     "Apple":        825745714608340992,
     "Chocolate":    825745748829929493,
     "Coffee":       825876525655916564,
-    "Toxic Water":  828041299110133770
+    "Toxic Water":  828041299110133770,
+    "Cursed Seal":  828375089903960104
 }
 
 
@@ -17,6 +18,6 @@ def item_emoji(item_name: str):
 
 def item_image(item_name: str):
     if item_name in emojis.keys():
-        return discord.File("emojis/g_{}.png".format(item_name.lower().replace(" ", "_")))
+        return discord.File("sprites/emojis/g_{}.png".format(item_name.lower().replace(" ", "_")))
     else:
-        return discord.File("emojis/g_place_holder.png")
+        return discord.File("sprites/emojis/g_place_holder.png")

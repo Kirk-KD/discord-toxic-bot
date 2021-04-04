@@ -21,6 +21,12 @@ class Toxic(discord.Client):
         self.tasks = BackgroundTasksCollection(self)
 
     async def on_ready(self):
+        self.init_data()
+        self.init_guilds()
+        self.init_stocks()
+        guilds_data.update_data()
+        game_data.update_data()
+
         await self.change_presence(
             status=discord.Status.idle,
             activity=discord.Activity(
@@ -29,17 +35,11 @@ class Toxic(discord.Client):
             )
         )
 
-        await self.tasks.start_tasks()
-
-        self.init_data()
-        self.init_guilds()
-        self.init_stocks()
-        guilds_data.update_data()
-        game_data.update_data()
-
         print('Logged in as {}'.format(self.user))
         logger.write_line("=" * 100)
         logger.log("LOGIN")
+
+        await self.tasks.start_tasks()
 
     async def on_guild_join(self, guild: discord.Guild):
         if str(guild.id) not in guilds_data.data.keys():
@@ -69,7 +69,7 @@ class Toxic(discord.Client):
         game_data.update_data()
 
     async def on_message(self, message: discord.Message):
-        if message.author.bot or type(message.channel) is not discord.TextChannel:
+        if not self.is_ready() or message.author.bot or type(message.channel) is not discord.TextChannel:
             return
 
         msg = message.content.strip()
