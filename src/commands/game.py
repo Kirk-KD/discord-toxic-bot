@@ -262,7 +262,7 @@ class Game(Category):
 
     class Give(CooldownCommand):
         def __init__(self):
-            super().__init__(["give", "share"], "give <user> <amount> [<item>]",
+            super().__init__(["give", "share", "gift"], "give <user> ((<item> [<amount>]) or (<amount>))",
                              "Give money or items to other people!", perms.EVERYONE, 5)
 
         async def __call__(self, message, args, client):
@@ -276,29 +276,36 @@ class Game(Category):
 
             player = manager.get_player(message.author)
             target_member = parse_member(message.guild, args[0])
-            amount = parse_int(args[1])
+            amount = parse_int(args[-1])
+            autofill_amount = False
 
             if not target_member:
-                await message.reply("Alright tell your non-existing friend \"{}\" I said hello.".format(
-                    args[0]
-                ), mention_author=False)
+                await message.reply("Alright tell your non-existing friend I said hello. Now go play kiddo.",
+                                    mention_author=False)
                 return
 
-            if not amount or amount == 0:
-                await message.reply("Um I think I need a valid number, maybe???", mention_author=False)
-                return
+            if not amount:
+                if shop.get_item(" ".join(args[1:])):
+                    amount = 1
+                    autofill_amount = True
+                else:
+                    await message.reply("Um I think I need a valid number, maybe???", mention_author=False)
+                    return
 
             target = manager.get_player(target_member)
+            if not target:
+                await message.reply("Dummy you can't give your stuff to bots.", mention_author=False)
+                return
 
-            if len(args) >= 3:
-                item_name = " ".join(args[2:])
+            if len(args) >= (2 if autofill_amount else 3):
+                item_name = " ".join(args[1:-1] if not autofill_amount else args[1:])
                 item = shop.get_item(item_name)
 
                 if not item:
                     await message.reply("That item doesn't exist, stop making stuff up.", mention_author=False)
                     return
 
-                if not player.has_item(item) or player.data["inv"][item.display_name] < amount:
+                if not player.has_item(item) or player.count_item(item) < amount:
                     await message.reply("You don't have enough to give lol.", mention_author=False)
                     return
 
@@ -318,6 +325,7 @@ class Game(Category):
                     color=discord.Color.green()
                 )
             else:
+                assert amount is not None
                 if player.data["stats"]["txc"] < amount:
                     await message.reply("You don't have enough to give lol.", mention_author=False)
                     return
@@ -460,6 +468,99 @@ class Game(Category):
 
             game_data.update_data()
 
+    class Buy(CooldownCommand):
+        def __init__(self):
+            super().__init__(["buy"], "buy <item> <amount>", "Buys an item from the shop.", perms.EVERYONE, 3)
+
+        async def __call__(self, message, args, client):
+            if not await self.check_cooldown(message):
+                return
+
+            if len(args) < 1:
+                await message.reply("What do you want to buy dummy.", mention_author=False)
+                return
+
+            amount = parse_int(args[-1])
+            if amount is None:
+                amount = 1
+                item = shop.get_item(" ".join(args))
+            elif amount == 0:
+                await message.reply("Uh, sure, you bought nothing. Have it for free.", mention_author=False)
+                return
+            else:
+                item = shop.get_item(" ".join(args[:-1]))
+
+            if not item or not item.is_purchasable:
+                await message.reply("Lol the shop doesn't even sell that.", mention_author=False)
+                return
+
+            price = amount * item.price
+            player = manager.get_player(message.author)
+            if player.data["stats"]["txc"] < price:
+                await message.reply("Well that sucks, you are poor and you can't afford it LMAO", mention_author=False)
+                return
+
+            player.data["stats"]["txc"] -= price
+            player.give_item(item, amount)
+            game_data.update_data()
+
+            embed = discord.Embed(
+                title="Successful Purchase",
+                description="You bought {} **{}** for **txc${}**! Now you have **txc${}** left in your wallet.".format(
+                    amount, item, price, player.data["stats"]["txc"]
+                ),
+                color=discord.Color.green()
+            ).set_footer(
+                text="ever wondered who the shop owner is?"
+            )
+            await message.reply(embed=embed, mention_author=False)
+
+    class Sell(CooldownCommand):
+        def __init__(self):
+            super().__init__(["sell"], "sell <item> <amount>", "Sell something 10% the original price.",
+                             perms.EVERYONE, 3)
+
+        async def __call__(self, message, args, client):
+            if not await self.check_cooldown(message):
+                return
+
+            if len(args) < 1:
+                await message.reply("What do you want to sell dummy.", mention_author=False)
+                return
+
+            amount = parse_int(args[-1])
+            if amount is None:
+                amount = 1
+                item = shop.get_item(" ".join(args))
+            elif amount == 0:
+                await message.reply("Hmm ok, you sold nothing for nothing. Have fun.", mention_author=False)
+                return
+            else:
+                item = shop.get_item(" ".join(args[:-1]))
+
+            if not item or not item.is_sellable:
+                await message.reply("Lol the shop doesn't even want that.", mention_author=False)
+                return
+
+            player = manager.get_player(message.author)
+            if player.count_item(item) < amount:
+                await message.reply("Lol you don't even have enough, stop humiliating yourself.", mention_author=False)
+                return
+
+            txc_gain = player.multiplier(item.price // 10 * amount)
+            player.remove_item(item, amount)
+            player.data["stats"]["txc"] += txc_gain
+            game_data.update_data()
+
+            embed = discord.Embed(
+                title="Successful Sale",
+                description="You sold {} **{}** for **txc${}**! You now have {}.".format(
+                    amount, item, txc_gain, player.count_item(item)
+                ),
+                color=discord.Color.green()
+            ).set_footer(text="who is the shop owner tho")
+            await message.reply(embed=embed, mention_author=False)
+
     # info
     class Profile(CooldownCommand):
         def __init__(self):
@@ -564,7 +665,8 @@ class Game(Category):
                 return
 
             amount = min(
-                [parse_int(args[0]) if parse_int(args[0]) else player.data["stats"]["txc"], player.data["stats"]["txc"]]
+                [parse_int(args[0]) if parse_int(args[0]) else player.data["stats"]["txc"],
+                 player.data["stats"]["txc"], 50000]
             )
             player_roll = random.randint(1, 6)
             toxic_roll = random.randint(1, 6)
@@ -606,7 +708,7 @@ class Game(Category):
     class Stocks(CooldownCommand):
         def __init__(self):
             super().__init__(["stocks", "stock", "stonks", "stonk"],
-                             "stocks [(\"buy\" or \"sell\" or \"view\") <stock>]",
+                             "stocks [(\"buy\" or \"sell\" or \"view\") <stock>] [<amount>]",
                              "They say you could become a rich boi doing this.", perms.EVERYONE, 5)
 
         async def __call__(self, message, args, client):

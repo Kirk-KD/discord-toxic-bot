@@ -11,6 +11,15 @@ class Dev(Category):
     def __init__(self):
         super().__init__("Dev", "Developer only.", hidden=True)
 
+    class Chain(Command):
+        def __init__(self):
+            super().__init__(["chain"], "chain <command... sep=;>", "chain commands.", perms.GLOBAL_DEV)
+
+        async def __call__(self, message, args, client):
+            commands = " ".join(args).strip(";").split(";")
+            for command in commands:
+                await handler.handle(message, client, content=command)
+
     class ResetStocks(Command):
         def __init__(self):
             super().__init__(["resetstocks"], "resetstocks", "Reset stocks.", perm=perms.GLOBAL_DEV)
@@ -26,7 +35,7 @@ class Dev(Category):
 
     class UpdateStocks(Command):
         def __init__(self):
-            super().__init__(["updatestocks"], "updatestocks", "update stocks.", perm=perms.GLOBAL_DEV)
+            super().__init__(["updatestocks", "us"], "updatestocks", "update stocks.", perm=perms.GLOBAL_DEV)
 
         async def __call__(self, message, args, client):
             stocks.update()
