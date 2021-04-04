@@ -2,6 +2,7 @@ from src.handler import handler
 from src.data import *
 from src.logger import logger
 from src.game.stocks_collection import stocks
+from src.tasks_collection import BackgroundTasksCollection
 
 from src.util.jsons import *
 from src.game.game_manager import manager
@@ -15,6 +16,10 @@ class Toxic(discord.Client):
     The Toxic bot!
     """
 
+    def __init__(self, **options):
+        super().__init__(**options)
+        self.tasks = BackgroundTasksCollection(self)
+
     async def on_ready(self):
         await self.change_presence(
             status=discord.Status.idle,
@@ -23,6 +28,8 @@ class Toxic(discord.Client):
                 name="_help to get help noobs"
             )
         )
+
+        await self.tasks.start_tasks()
 
         self.init_data()
         self.init_guilds()
@@ -110,7 +117,7 @@ class Toxic(discord.Client):
                 if not manager.get_player(member):
                     game_data.data["players"][str(member.id)] = player_json_setup()
 
-                game_data.data["players"][str(member.id)]["effects"] = []  # needs to find a better way later
+                game_data.data["players"][str(member.id)]["effects"] = []  # TODO: needs to find a better way later
 
         guilds_data.update_data()
         game_data.update_data()
