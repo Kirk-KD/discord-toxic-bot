@@ -2,9 +2,12 @@ from src import perms
 from src.category import Category
 from src.data import guilds_data, game_data
 from src.command import Command
+from src.game.game_manager import manager
+from src.game.shop import shop
 from src.game.stocks_collection import stocks
 from src.handler import handler
 from src.util import jsons
+from src.util.parser import parse_member, parse_int
 
 
 class Dev(Category):
@@ -22,7 +25,7 @@ class Dev(Category):
 
     class ResetStocks(Command):
         def __init__(self):
-            super().__init__(["resetstocks"], "resetstocks", "Reset stocks.", perm=perms.GLOBAL_DEV)
+            super().__init__(["resetstocks", "rs"], "resetstocks", "Reset stocks.", perm=perms.GLOBAL_DEV)
 
         async def __call__(self, message, args, client):
             for key in game_data.data["stocks"].keys():
@@ -56,6 +59,23 @@ class Dev(Category):
 
                 await message.reply("> Reboot required. Commands will be disabled until reboot.", mention_author=False)
                 handler.categories = []
+
+    class ForceGive(Command):
+        def __init__(self):
+            super().__init__(["forcegive", "fgive"], "forcegive <user> <item> <amount>", "Give item.",
+                             perm=perms.GLOBAL_DEV)
+
+        async def __call__(self, message, args, client):
+            if len(args) >= 3:
+                target = parse_member(message.guild, args[0])
+                player = manager.get_player(target) if target else None
+                amount = parse_int(args[-1])
+                item = shop.get_item(" ".join(args[1:(-1 if amount else len(args))]))
+
+                if player and amount and item:
+                    player.give_item(item, amount)
+                    game_data.update_data()
+                    await message.reply("> Given {} {} **{}**.".format(target, amount, item), mention_author=False)
 
 
 handler.add_category(Dev)
