@@ -1,10 +1,10 @@
-from src.category import Category
-from src.command import Command
-from src.handler import handler
-from src import perms
+from src.bot.category import Category
+from src.bot.command import Command
+from src.bot.handler import handler
+from src.bot import perms
 
-from src.util.parser import *
-from src.util.bot import *
+from src.bot.util.parser import *
+from src.bot.util.bot import *
 
 import discord
 import asyncio

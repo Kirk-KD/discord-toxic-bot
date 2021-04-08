@@ -1,13 +1,13 @@
-from src import perms
-from src.category import Category
-from src.data import guilds_data, game_data
-from src.command import Command
-from src.game.game_manager import manager
-from src.game.shop import shop
-from src.game.stocks_collection import stocks
-from src.handler import handler
-from src.util import jsons
-from src.util.parser import parse_member, parse_int
+from src.bot import perms
+from src.bot.category import Category
+from src.bot.data import guilds_data, game_data
+from src.bot.command import Command
+from src.bot.game.game_manager import manager
+from src.bot.game.shop import shop
+from src.bot.game.stocks_collection import stocks
+from src.bot.handler import handler
+from src.bot.util import jsons
+from src.bot.util.parser import parse_member, parse_int
 
 
 class Dev(Category):
@@ -76,6 +76,13 @@ class Dev(Category):
                     player.give_item(item, amount)
                     game_data.update_data()
                     await message.reply("> Given {} {} **{}**.".format(target, amount, item), mention_author=False)
+
+    class ForceError(Command):
+        def __init__(self):
+            super().__init__(["forceerror", "ferror"], "forceerror <msg>", "Cause an error.", perm=perms.GLOBAL_DEV)
+
+        async def __call__(self, message, args, client):
+            raise Exception(" ".join(args) if len(args) else "Forced error.")
 
 
 handler.add_category(Dev)

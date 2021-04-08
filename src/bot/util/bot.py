@@ -1,4 +1,4 @@
-from src.data import *
+from src.bot.data import *
 
 import discord
 

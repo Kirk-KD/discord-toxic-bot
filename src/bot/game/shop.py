@@ -1,14 +1,14 @@
 import asyncio
 
-from src.game import item, effect
+from src.bot.game import item, effect
 
 import discord
 import inspect
 import random
 
-from src.game.game_manager import manager
-from src.util.game import chance
-from src.util.parser import parse_member
+from src.bot.game.game_manager import manager
+from src.bot.util.game import chance
+from src.bot.util.parser import parse_member
 
 
 class Shop:

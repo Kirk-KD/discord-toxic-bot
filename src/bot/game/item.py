@@ -1,4 +1,4 @@
-from src.emojis import item_emoji
+from src.bot.emojis import item_emoji
 
 
 class Item:

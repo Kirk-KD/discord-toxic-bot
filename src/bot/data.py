@@ -2,7 +2,7 @@
 stores data read from json files
 """
 
-from src.util.jsons import *
+from src.bot.util.jsons import *
 
 
 class Data:

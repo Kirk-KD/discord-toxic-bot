@@ -1,15 +1,15 @@
-from src.category import Category
-from src.command import CooldownCommand
-from src.data import game_data
-from src.emojis import item_emoji, item_image, emojis
-from src.game.game_manager import manager
-from src.game.shop import shop
-from src.handler import handler
-from src.game.stocks_collection import stocks
-from src import perms
+from src.bot.category import Category
+from src.bot.command import CooldownCommand
+from src.bot.data import game_data
+from src.bot.emojis import item_emoji, item_image, emojis
+from src.bot.game.game_manager import manager
+from src.bot.game.shop import shop
+from src.bot.handler import handler
+from src.bot.game.stocks_collection import stocks
+from src.bot import perms
 
-from src.util.game import *
-from src.util.parser import *
+from src.bot.util.game import *
+from src.bot.util.parser import *
 
 import discord
 import random

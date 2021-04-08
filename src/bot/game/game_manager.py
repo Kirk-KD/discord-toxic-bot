@@ -1,5 +1,5 @@
-from src.data import game_data
-from src.game import player
+from src.bot.data import game_data
+from src.bot.game import player
 
 import discord
 
