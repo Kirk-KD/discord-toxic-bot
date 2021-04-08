@@ -5,8 +5,6 @@ from src.game import item
 
 import discord
 
-from src.game.shop import shop
-
 
 class Player:
     def __init__(self, member: discord.Member):
@@ -83,6 +81,8 @@ class Player:
 
         :return: bool
         """
+
+        from src.game.shop import shop
 
         if self.has_item(shop.get_item("Toxic Water")):
             self.remove_item(shop.get_item("Toxic Water"))

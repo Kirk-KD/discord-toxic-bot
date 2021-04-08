@@ -1,8 +1,14 @@
-from src.game import item, effect, game_manager
+import asyncio
+
+from src.game import item, effect
 
 import discord
 import inspect
 import random
+
+from src.game.game_manager import manager
+from src.util.game import chance
+from src.util.parser import parse_member
 
 
 class Shop:
@@ -32,7 +38,7 @@ class Shop:
                              "Eating this wonderful thing will give you a random amount of EXP!",
                              30000, True, True, True)
 
-        async def use(self, player, message=None):
+        async def use(self, player, message, client):
             exp = round(random.triangular(1, 100, 60))
             await player.gain_exp(exp)
 
@@ -48,7 +54,7 @@ class Shop:
                              "Drinking this will give you a 15% multi for 5-15 minutes!",
                              15000, True, True, True)
 
-        async def use(self, player, message=None):
+        async def use(self, player, message, client):
             minute = random.randint(5, 15)
             effect_ = effect.Effect(minute * 60, {"multi": 15})
 
@@ -66,7 +72,7 @@ class Shop:
             super().__init__("Apple", ["apple"], "An apple a day keeps nothing away! It will give you some money tho.",
                              150, True, False, True)
 
-        async def use(self, player, message=None):
+        async def use(self, player, message, client):
             amount = random.randint(100, 1000)
             player.data["stats"]["txc"] += amount
 
@@ -75,6 +81,62 @@ class Shop:
                 description="And received **{}$txc**, for some reason!".format(amount),
                 color=discord.Color.green()
             )
+
+    class CursedSeal(item.Item):
+        def __init__(self):
+            super().__init__("Cursed Seal", ["cursedseal", "curse", "seal", "cursed"],
+                             "Using this on someone will give them a -5% to -30% multiplier for 30 minutes! "
+                             "Btw it has a 30% chance or backfiring, just saying.",
+                             50000, True, True, True, effect_stackable=True)
+
+        async def use(self, player, message, client):
+            if player.has_effect(self):
+                return "Lol you are already cursed, you can't use the seal!"
+
+            await message.reply("Who do you want to curse (30% chance of backfiring)?", mention_author=False)
+
+            try:
+                def check(msg: discord.Message):
+                    print(msg.author == message.author)
+                    return msg.author == message.author
+                input_msg = await client.wait_for("message",
+                                                  check=lambda m: (m.author == message.author and
+                                                                   m.channel == message.channel),
+                                                  timeout=30)
+            except asyncio.TimeoutError:
+                return "What the hell you didn't reply. You just wasted a seal."
+
+            member = parse_member(message.guild, input_msg.content)
+            if not member:
+                return "Lol that user doesn't exist. You just wasted a seal."
+
+            target = manager.get_player(member)
+            amount = -random.randint(10, 30)
+            e = effect.Effect(30 * 60, {"multi": amount})
+
+            if message.author == member:
+                await message.reply(
+                    "Um ok, you cursed yourself and received a multiplier of **{}%** for 30 minutes.".format(amount),
+                    mention_author=False
+                )
+                await e.start(player, self)
+
+            if target.has_effect(self):
+                return "Dude they have already been cursed, give them a BREAK. You just wasted a seal."
+
+            if chance(30):
+                await message.reply(
+                    ("You tried to curse someone, but BOOM \\*uno reverse\\* TAKE THAT! "
+                     "You received a multiplier of **{}%** for 30 minutes.".format(amount)),
+                    mention_author=False
+                )
+                await e.start(player, self)
+            else:
+                await message.reply(
+                    "{} has been cursed with **{}%** multi for 30 minutes!".format(member, amount),
+                    mention_author=False
+                )
+                await e.start(target, self)
 
     def get_item(self, name: str):
         """

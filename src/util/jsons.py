@@ -70,6 +70,11 @@ def member_json_setup():
 
     return {
         "banned": False,
+        "muted": False,
+        "timers": {
+            "ban": None,
+            "mute": None
+        },
         "infractions": []
     }
 

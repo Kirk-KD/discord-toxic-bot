@@ -81,17 +81,17 @@ class Moderation(Category):
             )
             await message.reply(embed=embed, mention_author=False)
 
-            # add infraction
-            guilds_data.get_data("{}/members/{}/infractions".format(
-                message.guild.id, member.id
-            )).append(
+            member_data = guilds_data.data[str(message.guild.id)]["members"][str(member.id)]
+
+            member_data["infractions"].append(
                 infraction_json_setup("Mute", reason, datetime.datetime.now())
             )
-            guilds_data.update_data()
+            member_data["timers"]["mute"] = \
+                (str(datetime.datetime.now() + datetime.timedelta(0, time.total_seconds()))
+                 if args[1].lower() != "forever" else None)
+            member_data["muted"] = True
 
-            if args[1].lower() != "forever":
-                await asyncio.sleep(time.total_seconds())
-                await member.remove_roles(muted_role)
+            guilds_data.update_data()
 
         @staticmethod
         async def make_muted_role(message: discord.Message):
@@ -297,9 +297,6 @@ class Moderation(Category):
                 await message.reply("Invalid time.", mention_author=False)
                 return
 
-            await member.ban(reason=reason)
-
-            # add infraction
             guilds_data.get_data("{}/members/{}/infractions".format(
                 message.guild.id, member.id
             )).append(
@@ -308,8 +305,8 @@ class Moderation(Category):
             guilds_data.set_data("{}/members/{}/banned".format(
                 message.guild.id, member.id
             ), True)
-            guilds_data.update_data()
 
+            # reply
             embed = discord.Embed(
                 title="Ban",
                 description="LMAO {} was banned!".format(
@@ -332,6 +329,7 @@ class Moderation(Category):
             )
             await message.reply(embed=embed, mention_author=False)
 
+            # DM sinner
             embed = discord.Embed(
                 title="You were banned from {}".format(
                     message.guild.name
@@ -353,9 +351,13 @@ class Moderation(Category):
             )
             await member.send(embed=embed)
 
+            member_data = guilds_data.data[str(message.guild.id)]["members"][str(member.id)]
             if time:
-                await asyncio.sleep(time.total_seconds())
-                await member.unban()
+                member_data["timers"]["ban"] = \
+                    str(datetime.datetime.now() + datetime.timedelta(0, time.total_seconds()))  # <-------
+
+            guilds_data.update_data()
+            await member.ban(reason=reason)
 
     class Unban(Command):
         def __init__(self):

@@ -431,7 +431,7 @@ class Game(Category):
 
             await message.reply(embed=embed, mention_author=False)
 
-    class Use(CooldownCommand):
+    class Use(CooldownCommand):  # TODO: BETTER USE SYSTEM
         def __init__(self):
             super().__init__(["use"], "use <item>", "Use an item.", perms.EVERYONE, 3)
 
@@ -453,13 +453,13 @@ class Game(Category):
                 await message.reply("Lel you are so funny you don't even have that item.", mention_author=False)
                 return
 
-            if player.has_effect(item):
+            if player.has_effect(item) and not item.effect_stackable:
                 await message.reply("Don't be so greedy, you already have that item's effect!", mention_author=False)
                 return
 
             player.remove_item(item)
-            await player.gain_exp()
-            response = await item.use(player, message)
+            response = await item.use(player, message, client)
+
             if response:
                 if type(response) is discord.Embed:
                     await message.reply(embed=response, mention_author=False)
@@ -547,6 +547,7 @@ class Game(Category):
                 await message.reply("Lol you don't even have enough, stop humiliating yourself.", mention_author=False)
                 return
 
+            print(amount)
             txc_gain = player.multiplier(item.price // 10 * amount)
             player.remove_item(item, amount)
             player.data["stats"]["txc"] += txc_gain
@@ -554,7 +555,7 @@ class Game(Category):
 
             embed = discord.Embed(
                 title="Successful Sale",
-                description="You sold {} **{}** for **txc${}**! You now have {}.".format(
+                description="You sold {} **{}** for **txc${}**! You now have {} left.".format(
                     amount, item, txc_gain, player.count_item(item)
                 ),
                 color=discord.Color.green()
@@ -592,7 +593,7 @@ class Game(Category):
                 inline=False
             ).add_field(
                 name="Multi",
-                value="`+{}%`".format(player.data["stats"]["multi"]),
+                value="`{}%`".format(player.data["stats"]["multi"]),
                 inline=True
             ).add_field(
                 name="Wallet",
