@@ -77,5 +77,12 @@ class Dev(Category):
                     game_data.update_data()
                     await message.reply("> Given {} {} **{}**.".format(target, amount, item), mention_author=False)
 
+    class ForceError(Command):
+        def __init__(self):
+            super().__init__(["forceerror", "ferror"], "forceerror <msg>", "Cause an error.", perm=perms.GLOBAL_DEV)
+
+        async def __call__(self, message, args, client):
+            raise Exception(" ".join(args) if len(args) else "Forced error.")
+
 
 handler.add_category(Dev)

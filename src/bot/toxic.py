@@ -37,7 +37,7 @@ class Toxic(discord.Client):
 
         print('Logged in as {}'.format(self.user))
         logger.write_line("=" * 100)
-        logger.log("LOGIN")
+        logger.log(0, "INFO", "LOGIN")
 
         await self.tasks.start_tasks()
 
@@ -80,11 +80,11 @@ class Toxic(discord.Client):
         if len(args) != 0:
             message = args[0]
             await message.reply("Hey uhh you broke me. Congrats. Error info has been recorded.")
-            logger.log("ERROR", "Error caused by \"{}\" when using command \"{}\". Error message:\n{}".format(
+            logger.error("Error caused by \"{}\" when using command \"{}\". Error message:\n{}".format(
                 message.author, message.content, traceback.format_exc()
             ))
         else:
-            logger.log("ERROR", "Error occurred outside command usage. Error message:\n{}".format(
+            logger.error("Error occurred outside command usage. Error message:\n{}".format(
                 traceback.format_exc()
             ))
 
