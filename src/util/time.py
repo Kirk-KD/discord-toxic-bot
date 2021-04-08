@@ -61,3 +61,14 @@ def format_timedelta(timedelta: datetime.timedelta):
         "{}m ".format(minutes) if minutes or hours or days else "",
         "{}s".format(seconds) if seconds or minutes or hours or days else ""
     )
+
+
+def string_to_datetime(s: str):
+    """
+    converts a string to a datetime object.
+
+    :param s: str
+    :return: datetime
+    """
+
+    return datetime.datetime.strptime(s, "%Y-%m-%d %H:%M:%S.%f")
