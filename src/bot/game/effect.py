@@ -1,4 +1,4 @@
-from src.data import game_data
+from src.bot.data import game_data
 
 import asyncio
 

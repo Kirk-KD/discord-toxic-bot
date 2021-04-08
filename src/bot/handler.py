@@ -1,5 +1,5 @@
-from src.data import *
-from src.perms import perm_check
+from src.bot.data import *
+from src.bot.perms import perm_check
 
 import discord
 

@@ -1,7 +1,7 @@
-from src.category import Category
-from src.command import Command
-from src.handler import handler
-from src import perms
+from src.bot.category import Category
+from src.bot.command import Command
+from src.bot.handler import handler
+from src.bot import perms
 
 import random
 import os

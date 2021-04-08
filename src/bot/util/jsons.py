@@ -1,4 +1,4 @@
-from src.util.time import *
+from src.bot.util.time import *
 
 import json
 import discord

@@ -1,4 +1,4 @@
-from src.util.time import timestamp
+from src.bot.util.time import timestamp
 
 
 class Logger:

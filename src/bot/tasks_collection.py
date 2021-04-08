@@ -3,9 +3,9 @@ import datetime
 
 import discord
 
-from src.data import guilds_data
-from src.game.stocks_collection import stocks
-from src.util.time import string_to_datetime
+from src.bot.data import guilds_data
+from src.bot.game.stocks_collection import stocks
+from src.bot.util.time import string_to_datetime
 
 
 class BackgroundTasksCollection:

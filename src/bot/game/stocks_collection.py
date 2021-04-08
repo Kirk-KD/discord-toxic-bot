@@ -1,5 +1,5 @@
-from src.data import game_data
-from src.game.stock import Stock
+from src.bot.data import game_data
+from src.bot.game.stock import Stock
 
 if "stocks" not in game_data.data.keys():
     game_data.data["stocks"] = {

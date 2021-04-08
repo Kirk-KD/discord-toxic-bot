@@ -1,11 +1,11 @@
-from src.handler import handler
-from src.data import *
+from src.bot.handler import handler
+from src.bot.data import *
 from src.logger import logger
-from src.game.stocks_collection import stocks
-from src.tasks_collection import BackgroundTasksCollection
+from src.bot.game.stocks_collection import stocks
+from src.bot.tasks_collection import BackgroundTasksCollection
 
-from src.util.jsons import *
-from src.game.game_manager import manager
+from src.bot.util.jsons import *
+from src.bot.game.game_manager import manager
 
 import discord
 import traceback
