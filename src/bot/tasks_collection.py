@@ -3,7 +3,7 @@ import datetime
 
 import discord
 
-from src.bot.data import guilds_data
+from src.bot.data import guilds_data, game_data
 from src.bot.game.stocks_collection import stocks
 from src.bot.util.time import string_to_datetime
 
@@ -17,6 +17,17 @@ class BackgroundTasksCollection:
             if name.startswith("task_"):
                 self.client.loop.create_task(await getattr(self, name)())
 
+    def check_timer(self, member_data: dict, key: str):
+        """
+        checks if a timer is done in a member data.
+
+        :param member_data: dict
+        :param key: str
+        :return: bool
+        """
+
+        return member_data["timers"][key] and string_to_datetime(member_data["timers"][key]) <= datetime.datetime.now()
+
     # tasks
     async def task_update_stocks(self):
         await self.client.wait_until_ready()
@@ -29,14 +40,14 @@ class BackgroundTasksCollection:
         while not self.client.is_closed():
             await asyncio.sleep(1)
 
-            for guild_id, guild in guilds_data.data.items():
-                if guild["initialised"]:
-                    for member_id, member in guild["members"].items():
+            for guild in guilds_data.all():
+                if guild["data"]["initialised"]:
+                    for member_id, member in guild["data"]["members"].items():
                         if member["muted"] and string_to_datetime(member["timers"]["mute"]) <= datetime.datetime.now():
                             member["muted"] = False
                             member["timers"]["mute"] = None
 
-                            g = discord.utils.get(self.client.guilds, id=int(guild_id))
+                            g = discord.utils.get(self.client.guilds, id=int(guild["_id"]))
                             m = discord.utils.get(g.members, id=int(member_id))
 
                             if g and m:
@@ -48,21 +59,16 @@ class BackgroundTasksCollection:
                             member["banned"] = False
                             member["timers"]["ban"] = None
 
-                            g = discord.utils.get(self.client.guilds, id=int(guild_id))
+                            g = discord.utils.get(self.client.guilds, id=int(guild["_id"]))
                             user = await self.client.fetch_user(int(member_id))
 
                             if g and user:
                                 await g.unban(user)
 
-            guilds_data.update_data()
+                    guilds_data.set(guild["_id"], guild)
 
-    def check_timer(self, member_data: dict, key: str):
-        """
-        checks if a timer is done in a member data.
-
-        :param member_data: dict
-        :param key: str
-        :return: bool
-        """
-
-        return member_data["timers"][key] and string_to_datetime(member_data["timers"][key]) <= datetime.datetime.now()
+            for member in game_data.all():
+                for effect in member["data"]["effects"]:
+                    if effect["end_time"] and string_to_datetime(effect["end_time"]) <= datetime.datetime.now():
+                        member["data"]["effects"].remove(effect)
+                        game_data.set(member["_id"], member)

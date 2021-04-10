@@ -13,7 +13,10 @@ import threading
 from dotenv import load_dotenv
 import os
 
+from src.logger import logger
+
 if __name__ == '__main__':
+    logger.info("STARTING...")
     load_dotenv()
 
     token = os.getenv("TOKEN")

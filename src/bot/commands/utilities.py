@@ -9,6 +9,8 @@ from src.bot.util.bot import *
 import discord
 import asyncio
 
+from src.bot.util.time import timestamp, format_time, signature
+
 
 class Utilities(Category):
     def __init__(self):
@@ -191,7 +193,7 @@ class Utilities(Category):
 
                 return True
 
-            if guilds_data.data[str(message.author.guild.id)]["initialised"]:
+            if guilds_data.get(message.guild.id)["initialised"]:
                 await message.reply(
                     ("yo your server was already initialised lol. "
                      "Do you wish to redo setup? Reply `yes` in 10 seconds if you do."), mention_author=False
@@ -207,10 +209,12 @@ class Utilities(Category):
                         return
                     else:
                         # initialise settings
-                        guilds_data.set_data("{}/settings/perm_ids/owner".format(message.guild.id), [])
-                        guilds_data.set_data("{}/settings/perm_ids/mod".format(message.guild.id), [])
-                        guilds_data.set_data("{}/initialised".format(message.guild.id), False)
-                        guilds_data.update_data()
+                        guild_data = guilds_data.get(message.guild.id)
+                        guild_data["settings"]["perm_ids"]["owner"] = \
+                            guild_data["settings"]["perm_ids"]["mod"] = []
+                        guild_data["initialised"] = False
+                        guilds_data.set(message.guild.id, {"data": guild_data})
+
                 except asyncio.exceptions.TimeoutError:
                     await message.channel.send("Setup redo canceled.")
                     return
@@ -252,10 +256,11 @@ class Utilities(Category):
             if not await get_user_input(guild_roles, mod_roles, embed):
                 return
 
-            guilds_data.set_data("{}/settings/perm_ids/owner".format(message.guild.id), owner_roles.copy())
-            guilds_data.set_data("{}/settings/perm_ids/mod".format(message.guild.id), mod_roles.copy())
-            guilds_data.set_data("{}/initialised".format(message.guild.id), True)
-            guilds_data.update_data()
+            guild_data = guilds_data.get(message.guild.id)
+            guild_data["settings"]["perm_ids"]["owner"] = owner_roles
+            guild_data["settings"]["perm_ids"]["mod"] = mod_roles
+            guild_data["initialised"] = True
+            guilds_data.set(message.guild.id, {"data": guild_data})
 
             embed = discord.Embed(
                 title="Toxic bot setup complete!",

@@ -1,4 +1,4 @@
-from src.bot.data import *
+from src.bot.data import guilds_data
 
 import discord
 
@@ -33,9 +33,7 @@ def get_infractions(member: discord.Member):
     :return: tuple[str, dict]
     """
 
-    infractions = guilds_data.get_data("{}/members/{}/infractions".format(
-        str(member.guild.id), str(member.id)
-    ))[::-1]  # reversed because newest is always last
+    infractions = guilds_data.get(member.guild.id)["members"][str(member.id)]["infractions"][::-1]
     counter = {
         "mute": 0,
         "warn": 0,

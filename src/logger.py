@@ -10,8 +10,11 @@ class LoggerRecord:
 
     def get_html(self):
         return "<p style='color: {};'><b>[{}] [{}]</b> {}</p>"\
-            .format(["#000000", "#fcdb03", "#ff0000"][self.log_type], self.log_time, self.log_name,
-                    self.log_msg.replace(" ", "&nbsp;").replace("\t", "&nbsp;" * 4))\
+            .format(["#000000", "#fcdb03", "#ff0000"][self.log_type],
+                    self.log_time.replace("<", "&lt;").replace(">", "&gt;"),
+                    self.log_name.replace("<", "&lt;").replace(">", "&gt;"),
+                    self.log_msg.replace("<", "&lt;").replace(">", "&gt;").
+                    replace(" ", "&nbsp;").replace("\t", "&nbsp;" * 4))\
             .replace("\n", "<br>")
 
 

@@ -9,7 +9,7 @@ import discord
 class Player:
     def __init__(self, member: discord.Member):
         self.member = member
-        self.data = game_data.data["players"][str(self.member.id)]
+        self.data = game_data.get(self.member.id)
 
     def has_item(self, item_: item.Item):
         """
@@ -82,7 +82,7 @@ class Player:
         :return: bool
         """
 
-        from src.game.shop import shop
+        from src.bot.game.shop import shop
 
         if self.has_item(shop.get_item("Toxic Water")):
             self.remove_item(shop.get_item("Toxic Water"))
@@ -113,3 +113,6 @@ class Player:
 
     def multiplier(self, amount: int):
         return amount + round(amount * (self.data["stats"]["multi"] / 100))
+
+    def update_data(self):
+        game_data.set(self.member.id, {"data": self.data})

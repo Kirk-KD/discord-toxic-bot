@@ -138,6 +138,19 @@ class Shop:
                 )
                 await e.start(target, self)
 
+    class BankToken(item.Item):
+        def __init__(self):
+            super().__init__("Bank Token", ["banktoken", "bank", "token"],
+                             "Get some extra bank space by giving this to the bank!",
+                             10000, True, False, True)
+
+        async def use(self, player, message, client):
+            gain = random.randint(500, 10000)
+            player.data["bank"]["max"] += gain
+            player.update_data()
+
+            return "You used your bank token, and the bank gave you **txc${}** more bank space!".format(gain)
+
     def get_item(self, name: str):
         """
         gets an item by name. returns None if item is not found.

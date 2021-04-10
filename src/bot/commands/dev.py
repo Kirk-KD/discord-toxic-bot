@@ -1,6 +1,6 @@
 from src.bot import perms
 from src.bot.category import Category
-from src.bot.data import guilds_data, game_data
+from src.bot.data import stocks_data
 from src.bot.command import Command
 from src.bot.game.game_manager import manager
 from src.bot.game.shop import shop
@@ -8,6 +8,7 @@ from src.bot.game.stocks_collection import stocks
 from src.bot.handler import handler
 from src.bot.util import jsons
 from src.bot.util.parser import parse_member, parse_int
+from src.logger import logger
 
 
 class Dev(Category):
@@ -28,11 +29,10 @@ class Dev(Category):
             super().__init__(["resetstocks", "rs"], "resetstocks", "Reset stocks.", perm=perms.GLOBAL_DEV)
 
         async def __call__(self, message, args, client):
-            for key in game_data.data["stocks"].keys():
-                game_data.data["stocks"][key] = []
+            for stock in stocks_data.all():
+                stocks_data.set(stock["_id"], {"data": []})
 
             stocks.update()
-            game_data.update_data()
 
             await message.reply("> Stocks data reset.", mention_author=False)
 
@@ -42,7 +42,6 @@ class Dev(Category):
 
         async def __call__(self, message, args, client):
             stocks.update()
-            game_data.update_data()
 
             await message.reply("> Forced stock update.", mention_author=False)
 
@@ -52,10 +51,10 @@ class Dev(Category):
 
         async def __call__(self, message, args, client):
             if len(args) != 0:
-                if args[0].lower() == "game":
-                    jsons.write_json("data/game.json", {})
-                elif args[0].lower() == "guilds":
-                    jsons.write_json("data/guilds.json", {})
+                # if args[0].lower() == "game": TODO
+                #     jsons.write_json("data/game.json", {})
+                # elif args[0].lower() == "guilds":
+                #     jsons.write_json("data/guilds.json", {})
 
                 await message.reply("> Reboot required. Commands will be disabled until reboot.", mention_author=False)
                 handler.categories = []
@@ -74,7 +73,7 @@ class Dev(Category):
 
                 if player and amount and item:
                     player.give_item(item, amount)
-                    game_data.update_data()
+                    player.update_data()
                     await message.reply("> Given {} {} **{}**.".format(target, amount, item), mention_author=False)
 
     class ForceError(Command):
@@ -83,6 +82,13 @@ class Dev(Category):
 
         async def __call__(self, message, args, client):
             raise Exception(" ".join(args) if len(args) else "Forced error.")
+
+    class Log(Command):
+        def __init__(self):
+            super().__init__(["log"], "log <msg>", "Log an message.", perm=perms.GLOBAL_DEV)
+
+        async def __call__(self, message, args, client):
+            logger.info(" ".join(args))
 
 
 handler.add_category(Dev)

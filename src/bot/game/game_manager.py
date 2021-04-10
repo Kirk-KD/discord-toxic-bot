@@ -1,4 +1,3 @@
-from src.bot.data import game_data
 from src.bot.game import player
 
 import discord
@@ -9,10 +8,7 @@ class GameManager:
         pass
 
     def get_player(self, member: discord.Member):
-        if str(member.id) in game_data.data["players"].keys():
-            return player.Player(member)
-
-        return None
+        return player.Player(member)
 
 
 manager = GameManager()
