@@ -459,14 +459,13 @@ class Game(Category):
 
             player.remove_item(item)
             response = await item.use(player, message, client)
+            player.update_data()
 
             if response:
                 if type(response) is discord.Embed:
                     await message.reply(embed=response, mention_author=False)
                 else:
                     await message.reply(response, mention_author=False)
-
-            player.update_data()
 
     class Buy(CooldownCommand):
         def __init__(self):

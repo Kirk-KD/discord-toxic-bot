@@ -3,7 +3,7 @@ import datetime
 
 import discord
 
-from src.bot.data import guilds_data
+from src.bot.data import guilds_data, game_data
 from src.bot.game.stocks_collection import stocks
 from src.bot.util.time import string_to_datetime
 
@@ -66,3 +66,9 @@ class BackgroundTasksCollection:
                                 await g.unban(user)
 
                     guilds_data.set(guild["_id"], guild)
+
+            for member in game_data.all():
+                for effect in member["data"]["effects"]:
+                    if effect["end_time"] and string_to_datetime(effect["end_time"]) <= datetime.datetime.now():
+                        member["data"]["effects"].remove(effect)
+                        game_data.set(member["_id"], member)

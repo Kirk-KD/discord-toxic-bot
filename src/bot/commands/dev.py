@@ -8,6 +8,7 @@ from src.bot.game.stocks_collection import stocks
 from src.bot.handler import handler
 from src.bot.util import jsons
 from src.bot.util.parser import parse_member, parse_int
+from src.logger import logger
 
 
 class Dev(Category):
@@ -81,6 +82,13 @@ class Dev(Category):
 
         async def __call__(self, message, args, client):
             raise Exception(" ".join(args) if len(args) else "Forced error.")
+
+    class Log(Command):
+        def __init__(self):
+            super().__init__(["log"], "log <msg>", "Log an message.", perm=perms.GLOBAL_DEV)
+
+        async def __call__(self, message, args, client):
+            logger.info(" ".join(args))
 
 
 handler.add_category(Dev)
