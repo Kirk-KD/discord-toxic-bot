@@ -1,19 +1,10 @@
-from src.bot.data import game_data
+from src.bot.data import stocks_data
 from src.bot.game.stock import Stock
-
-if "stocks" not in game_data.data.keys():
-    game_data.data["stocks"] = {
-        "Toxic": [],
-        "Acid": [],
-        "xD Coffee": [],
-        "Roll of Rick": [],
-        "Guthib Dog": []
-    }
 
 
 class StocksCollection:
     def __init__(self):
-        self.data = game_data.data["stocks"]
+        self.data = stocks_data.all()
 
     def get_stock(self, name: str):
         """
@@ -23,10 +14,10 @@ class StocksCollection:
         :return: Stock
         """
 
-        for key, val in self.data.items():
-            if (name.lower().replace(" ", "") == key.lower().replace(" ", "") or
-                    name.lower().split()[0] == key.lower().split()[0]):
-                return Stock(key, val)
+        for stock in stocks_data.all():
+            if (name.lower().replace(" ", "") == stock["_id"].lower().replace(" ", "") or
+                    name.lower().split()[0] == stock["_id"].lower().split()[0]):
+                return Stock(stock["_id"], stock["data"])
 
         return None
 
@@ -37,10 +28,10 @@ class StocksCollection:
         :return: None
         """
 
-        for name in self.data.keys():
-            stock = self.get_stock(name)
+        for s in stocks_data.all():
+            stock = self.get_stock(s["_id"])
             stock.update()
-            self.data[name] = stock.record.copy()
+            stocks_data.set(s["_id"], {"data": stock.record.copy()})
 
     def get_stock_path(self, stock: Stock):
         """

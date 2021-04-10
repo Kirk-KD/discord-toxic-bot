@@ -1,34 +1,31 @@
-"""
-stores data read from json files
-"""
+import os
+from pymongo import MongoClient
+from dotenv import load_dotenv
 
-from src.bot.util.jsons import *
+load_dotenv()
+cluster = MongoClient(os.getenv("MONGO"))
+db = cluster["toxic"]
 
 
 class Data:
-    def __init__(self, path: str):
-        self.path = path
-        self.data = read_json(self.path)
+    def __init__(self, collection_name: str):
+        self.collection = db[collection_name]
 
-    def set_data(self, path: str, val):
-        keys = path.split("/")
-        d = self.data
-        for key in keys[:-1]:
-            d = d.setdefault(key, {})
-        d[keys[-1]] = val
+    def get(self, _id: str or int):
+        return d["data"] if (d := self.collection.find_one({"_id": str(_id)})) else None
 
-    def get_data(self, path: str):
-        keys = path.split("/")
-        c = self.data
-        for key in keys:
-            c = c[key]
+    def set(self, _id: str or int, data: dict):
+        self.collection.update_one({"_id": str(_id)}, {"$set": {k: v for k, v in data.items()}})
 
-        return c
+    def add(self, _id: str or int, data: dict):
+        post = {"_id": str(_id)}
+        post.update(data)
+        self.collection.insert_one(post)
 
-    def update_data(self):
-        write_json(self.path, self.data)
+    def all(self):
+        return self.collection.find({})
 
 
-# load data
-guilds_data = Data("data/guilds.json")
-game_data = Data("data/game.json")
+guilds_data = Data("guilds")
+game_data = Data("game")
+stocks_data = Data("stocks")

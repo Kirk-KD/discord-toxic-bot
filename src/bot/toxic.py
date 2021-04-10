@@ -1,5 +1,5 @@
 from src.bot.handler import handler
-from src.bot.data import *
+from src.bot.data import guilds_data, game_data, stocks_data
 from src.logger import logger
 from src.bot.game.stocks_collection import stocks
 from src.bot.tasks_collection import BackgroundTasksCollection
@@ -21,11 +21,9 @@ class Toxic(discord.Client):
         self.tasks = BackgroundTasksCollection(self)
 
     async def on_ready(self):
-        self.init_data()
+        logger.info("INITIALISING DATABASE...")
         self.init_guilds()
         self.init_stocks()
-        guilds_data.update_data()
-        game_data.update_data()
 
         await self.change_presence(
             status=discord.Status.idle,
@@ -37,36 +35,39 @@ class Toxic(discord.Client):
 
         print('Logged in as {}'.format(self.user))
         logger.write_line("=" * 100)
-        logger.log(0, "INFO", "LOGIN")
+        logger.info("CLIENT LOGIN")
 
         await self.tasks.start_tasks()
 
     async def on_guild_join(self, guild: discord.Guild):
-        if str(guild.id) not in guilds_data.data.keys():
-            guilds_data.data[str(guild.id)] = guild_json_setup(guild)
+        if not guilds_data.get(guild.id):
+            guilds_data.add(guild.id, {"data": guild_json_setup(guild)})
 
         for member in guild.members:
-            if member not in guilds_data.data[str(guild.id)]["members"].keys():
-                guilds_data.data[str(guild.id)]["members"][str(member.id)] = member_json_setup()
+            if member.bot:
+                continue
 
-            if not manager.get_player(member):
-                game_data.data["players"][str(member.id)] = player_json_setup()
+            g_data = guilds_data.get(guild.id)
+            if str(member.id) not in g_data["members"].keys():
+                g_data["members"][str(member.id)] = member_json_setup()
+            guilds_data.set(guild.id, {"data": g_data})
 
-        guilds_data.update_data()
-        game_data.update_data()
+            if not game_data.get(member.id):
+                game_data.add(member.id, {"data": player_json_setup()})
 
     async def on_member_join(self, member: discord.Member):
         if member.bot:
             return
 
-        if str(member.id) not in guilds_data.data[str(member.guild.id)]["members"].keys():
-            guilds_data.data[str(member.guild.id)]["members"][str(member.id)] = member_json_setup()
+        guild = member.guild
+        g_data = guilds_data.get(guild.id)
+        if str(member.id) not in g_data["members"].keys():
+            g_data["members"][str(member.id)] = member_json_setup()
+        guilds_data.set(guild.id, {"data": g_data})
 
-        if not manager.get_player(member):
-            game_data.data[str(member.id)] = player_json_setup()
+        if not game_data.get(member.id):
+            game_data.add(member.id, {"data": player_json_setup()})
 
-        guilds_data.update_data()
-        game_data.update_data()
 
     async def on_message(self, message: discord.Message):
         if not self.is_ready() or message.author.bot or type(message.channel) is not discord.TextChannel:
@@ -90,36 +91,26 @@ class Toxic(discord.Client):
 
         traceback.print_exc()
 
-    def init_data(self):
-        if "stocks" not in game_data.data.keys():
-            game_data.data["stocks"] = {
-                "Toxic": [],
-                "Acid": [],
-                "xD Coffee": [],
-                "Roll of Rick": [],
-                "Guthib Dog": []
-            }
-        if "players" not in game_data.data.keys():
-            game_data.data["players"] = {}
-
     def init_guilds(self):
         for guild in self.guilds:
-            if str(guild.id) not in guilds_data.data.keys():
-                guilds_data.data[str(guild.id)] = guild_json_setup(guild)
+            if not guilds_data.get(guild.id):
+                guilds_data.add(guild.id, {"data": guild_json_setup(guild)})
 
             for member in guild.members:
                 if member.bot:
                     continue
 
-                if str(member.id) not in guilds_data.data[str(guild.id)]["members"].keys():
-                    guilds_data.data[str(guild.id)]["members"][str(member.id)] = member_json_setup()
+                g_data = guilds_data.get(guild.id)
+                if str(member.id) not in g_data["members"].keys():
+                    g_data["members"][str(member.id)] = member_json_setup()
+                guilds_data.set(guild.id, {"data": g_data})
 
-                if not manager.get_player(member):
-                    game_data.data["players"][str(member.id)] = player_json_setup()
-
-        guilds_data.update_data()
-        game_data.update_data()
+                if not game_data.get(member.id):
+                    game_data.add(member.id, {"data": player_json_setup()})
 
     def init_stocks(self):
-        stocks.update()
-        game_data.update_data()
+        if stocks_data.all().count() == 0:
+            stock_names = ["Toxic", "Acid", "xD Coffee", "Roll of Rick", "Guthib Dog"]
+            for name in stock_names:
+                if not stocks_data.get(name):
+                    stocks_data.add(name, {"data": []})

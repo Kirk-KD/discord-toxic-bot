@@ -1,4 +1,4 @@
-from src.bot.data import *
+from src.bot.data import guilds_data
 from src.bot.perms import perm_check
 
 import discord
@@ -16,7 +16,7 @@ class Handler:
         args = msg.split()
         name = args.pop(0).lower()
 
-        if not guilds_data.get_data("{}/initialised".format(str(message.author.guild.id))) and name != "setup":
+        if not guilds_data.get(message.guild.id)["initialised"] and name != "setup":
             await message.reply(
                 "Hey tell your server owner to do a `_setup` first, then you can order me around!",
                 mention_author=False

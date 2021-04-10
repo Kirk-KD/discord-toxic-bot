@@ -1,3 +1,4 @@
+from src.bot.data import stocks_data
 from src.bot.util.time import *
 
 import json
@@ -103,7 +104,7 @@ def player_json_setup():
     :return: dict
     """
 
-    from src.game.stocks_collection import stocks
+    from src.bot.game.stocks_collection import stocks
 
     return {
         "stats": {
@@ -117,5 +118,5 @@ def player_json_setup():
         },
         "inv": {},
         "effects": [],
-        "stocks": {name: 0 for name in stocks.data.keys()}
+        "stocks": {s["_id"]: 0 for s in stocks_data.all()}
     }

@@ -1,6 +1,5 @@
 from src.bot.category import Category
 from src.bot.command import CooldownCommand
-from src.bot.data import game_data
 from src.bot.emojis import item_emoji, item_image, emojis
 from src.bot.game.game_manager import manager
 from src.bot.game.shop import shop
@@ -46,6 +45,8 @@ class Game(Category):
                 player.data["stats"]["txc"] += amount
                 await player.gain_exp()
 
+                player.update_data()
+
                 embed = discord.Embed(
                     title="Got 'em",
                     description="**{}** felt bad for you and gave you **txc${}** lmaooo :money_mouth:".format(
@@ -59,13 +60,11 @@ class Game(Category):
                     title="No one cares",
                     description="**{}** walked right pass you and "
                                 "didn't waste their money on someone like you lol".format(
-                        random.choice(characters)
-                    ),
+                                    random.choice(characters)
+                                ),
                     color=discord.Color.red()
                 ).set_footer(text="stonkn't :(")
                 await message.reply(embed=embed, mention_author=False)
-
-            game_data.update_data()
 
     class Search(CooldownCommand):
         def __init__(self):
@@ -148,7 +147,7 @@ class Game(Category):
                     )
                     await message.reply(embed=embed, mention_author=False)
 
-            game_data.update_data()
+            player.update_data()
 
     class Balance(CooldownCommand):
         def __init__(self):
@@ -223,7 +222,8 @@ class Game(Category):
 
             player.data["bank"]["curr"] += amount
             player.data["stats"]["txc"] -= amount
-            game_data.update_data()
+
+            player.update_data()
 
             await message.reply("Alright, **txc${}** deposited safely into the bank.".format(amount),
                                 mention_author=False)
@@ -255,7 +255,7 @@ class Game(Category):
 
             player.data["stats"]["txc"] += amount
             player.data["bank"]["curr"] -= amount
-            game_data.update_data()
+            player.update_data()
 
             await message.reply("Alright, **txc${}** withdrawn from the bank.".format(amount),
                                 mention_author=False)
@@ -345,7 +345,7 @@ class Game(Category):
                     color=discord.Color.green()
                 )
 
-            game_data.update_data()
+            player.update_data()
             await message.reply(embed=embed, mention_author=False)
 
     # item
@@ -466,7 +466,7 @@ class Game(Category):
                 else:
                     await message.reply(response, mention_author=False)
 
-            game_data.update_data()
+            player.update_data()
 
     class Buy(CooldownCommand):
         def __init__(self):
@@ -502,7 +502,7 @@ class Game(Category):
 
             player.data["stats"]["txc"] -= price
             player.give_item(item, amount)
-            game_data.update_data()
+            player.update_data()
 
             embed = discord.Embed(
                 title="Successful Purchase",
@@ -551,7 +551,7 @@ class Game(Category):
             txc_gain = player.multiplier(item.price // 10 * amount)
             player.remove_item(item, amount)
             player.data["stats"]["txc"] += txc_gain
-            game_data.update_data()
+            player.update_data()
 
             embed = discord.Embed(
                 title="Successful Sale",
@@ -703,7 +703,7 @@ class Game(Category):
 
                 player.data["stats"]["txc"] -= amount
 
-            game_data.update_data()
+            player.update_data()
             await message.reply(embed=embed, mention_author=False)
 
     class Stocks(CooldownCommand):
@@ -785,7 +785,7 @@ class Game(Category):
 
                     player.data["stats"]["txc"] -= price
                     player.data["stocks"][stock.name] += amount
-                    game_data.update_data()
+                    player.update_data()
 
                     embed = discord.Embed(
                         title=":chart_with_downwards_trend: Stock Purchase :chart_with_upwards_trend:",
@@ -824,7 +824,7 @@ class Game(Category):
 
                     player.data["stocks"][stock.name] -= amount
                     player.data["stats"]["txc"] += max(stock.current * amount, 1)
-                    game_data.update_data()
+                    player.update_data()
 
                     embed = discord.Embed(
                         title=":chart_with_downwards_trend: Stock Trade :chart_with_upwards_trend:",

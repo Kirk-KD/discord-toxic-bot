@@ -1,6 +1,7 @@
+# TODO: HOW TO SEND PLOT GRAPH WITHOUT SAVING LOCALLY
+
 import random
 from math import exp, sqrt
-import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.ticker import MaxNLocator
 
