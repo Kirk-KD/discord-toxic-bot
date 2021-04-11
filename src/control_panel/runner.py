@@ -1,4 +1,7 @@
+from json import JSONDecodeError
+
 from flask import Flask, render_template, redirect, request
+import json
 import os
 from pymongo import MongoClient
 from dotenv import load_dotenv
@@ -28,7 +31,15 @@ def logs():
 @app.route("/db", methods=["POST", "GET"])
 def db_():
     if request.method == "GET":
-        return render_template("db.html")
+        query_string = request.args.get("query")
+        if not query_string:
+            return render_template("db.html", data=None)
+
+        try:
+            data = [doc for doc in db["game"].find(json.loads(query_string))]
+            return render_template("db.html", data=data)
+        except JSONDecodeError:
+            return render_template("db.html", data=[]), 400
     else:
         d = {}
 

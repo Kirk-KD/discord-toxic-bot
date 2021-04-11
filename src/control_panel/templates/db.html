@@ -8,73 +8,88 @@
 
 {% block content %}
 {% autoescape false %}
+<div class="container" style="padding: 0px !important;">
+    <form action="/db" style="display: table !important; margin: 3px !important;">
+        <div style="display: table-cell !important; width: 100% !important;">
+            <input type="text" name="query" style="width: 100% !important;">
+        </div>
+        <input class="button-outline" type="submit" value="Query" style="margin-left: 10px;">
+    </form>
+</div>
+
 <div class="container db-container">
     <ul class="tree" id="db-tree"></ul>
 </div>
 
 <div class="btn-container">
     <button class="button button-outline" onclick="getDB();">Refresh</button>
-    <button class="button button-outline" onclick="">Find</button> <!-- TODO -->
 </div>
 {% endautoescape %}
 {% endblock %}
 
 {% block script %}
 <script>
-    function getDB() {
-        function color(text, color) {
-            return `<span style="color: ${color} !important;">${text}</span>`;
-        }
-
-        function parseTree(data, isArray) {
-            let s = "";
-
-            for (const [key, val] of Object.entries(data)) {
-                let k = `<i>${isArray ? color(key, "#098658") : key}</i>`;
-
-                if (typeof val === "string") {
-                    s += `<li>${k}: ${color(`"${val}"`, "#CE834A")}</li>`;
-                } else if (typeof val == "number") {
-                    s += `<li>${k}: ${color(val, "#098658")}</li>`
-                } else if (val == null) {
-                    s += `<li>${k}: ${color("null", "#1E2C83")}</li>`
-                } else if (Array.isArray(val)) {
-                    s += `
-                    <li>
-                        <span class="caret">${k}: ${color("Array", "#C586C0")}</span>
-                        <ul class="nested">${parseTree(val, true)}</ul>
-                    </li>
-                    `;
-                } else {
-                    s += `
-                    <li>
-                        <span class="caret">${k}: ${color("Object", "#C586C0")}</span>
-                        <ul class="nested">${parseTree(val, false)}</ul>
-                    </li>
-                    `;
-                }
-            }
-
-            return s;
-        }
-
-        $.post("/db", (data) => {
-            $("#db-tree").html(parseTree(data, false));
-        }).done(() => {
-            var toggler = document.getElementsByClassName("caret");
-            var i;
-
-            for (i = 0; i < toggler.length; i++) {
-                toggler[i].addEventListener("click", function() {
-                    this.parentElement.querySelector(".nested").classList.toggle("active");
-                    this.classList.toggle("caret-down");
-                })
-            }
-        });
+    function color(text, color) {
+        return `<span style="color: ${color} !important;">${text}</span>`;
     }
 
-    (() => {
-        getDB();
-    })();
+    function init() {
+        var toggler = document.getElementsByClassName("caret");
+        var i;
+
+        for (i = 0; i < toggler.length; i++) {
+            toggler[i].addEventListener("click", function() {
+                this.parentElement.querySelector(".nested").classList.toggle("active");
+                this.classList.toggle("caret-down");
+            })
+        }
+    }
+
+    function parseTree(data, isArray) {
+        let s = "";
+
+        for (const [key, val] of Object.entries(data)) {
+            let k = `<i>${isArray ? color(key, "#098658") : key}</i>`;
+
+            if (typeof val === "string") {
+                s += `<li>${k}: ${color(`"${val}"`, "#CE834A")}</li>`;
+            } else if (typeof val == "number") {
+                s += `<li>${k}: ${color(val, "#098658")}</li>`
+            } else if (val == null) {
+                s += `<li>${k}: ${color("null", "#1E2C83")}</li>`
+            } else if (Array.isArray(val)) {
+                s += `
+                <li>
+                    <span class="caret">${k}: ${color("Array", "#C586C0")}</span>
+                    <ul class="nested">${parseTree(val, true)}</ul>
+                </li>
+                `;
+            } else {
+                s += `
+                <li>
+                    <span class="caret">${k}: ${color("Object", "#C586C0")}</span>
+                    <ul class="nested">${parseTree(val, false)}</ul>
+                </li>
+                `;
+            }
+        }
+
+        return s || "<span>No results found.</span>";
+    }
+
+    function getDB() {
+        $.post("/db", data => {
+            $("#db-tree").html(parseTree(data, false));
+        }).done(init);
+    }
 </script>
+
+{% autoescape false %}
+{% if data != None %}
+<script>$("#db-tree").html(parseTree({{ data }}, false)).promise().done(init);</script>
+{% else %}
+<script>getDB();</script>
+{% endif %}
+{% endautoescape %}
+
 {% endblock %}
