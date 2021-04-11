@@ -1,12 +1,4 @@
-.title-container {
-    margin-top: 20px !important;
-}
-
-.title-item {
-    vertical-align: text-bottom !important;
-}
-
-.logs {
+.logs-container {
     border: 1px solid black !important;
     border-radius: 10px !important;
     padding: 15px !important;
