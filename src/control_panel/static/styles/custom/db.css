@@ -1,0 +1,52 @@
+.db-container {
+    border: 1px solid black !important;
+    border-radius: 10px !important;
+    padding: 15px !important;
+    height: 80vh !important;
+    overflow: scroll !important;
+}
+
+.btn-container {
+    margin-top: 10px !important;
+    display: inline-block;
+}
+
+/* tree view */
+li, span {
+    font-size: 17px !important;
+    line-height: 90% !important;
+    color: #002243;
+}
+
+ul, .tree {
+    list-style-type: none;
+}
+
+.tree {
+    margin: 0;
+    padding: 0;
+}
+
+.caret {
+    cursor: pointer;
+    user-select: none;
+}
+
+.caret::before {
+    content: "\25B6";
+    color: black;
+    display: inline-block;
+    margin-right: 6px;
+}
+
+.caret-down::before {
+    transform: rotate(90deg);
+}
+
+.nested {
+    display: none;
+}
+
+.active {
+    display: block;
+}

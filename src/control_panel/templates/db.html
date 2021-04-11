@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/custom/db.css') }}">
+{% endblock %}
+
+{% block title %}Database{% endblock %}
+
+{% block content %}
+{% autoescape false %}
+<div class="container db-container">
+    <ul class="tree" id="db-tree"></ul>
+</div>
+
+<div class="btn-container">
+    <button class="button button-outline" onclick="getDB();">Refresh</button>
+    <button class="button button-outline" onclick="">Find</button> <!-- TODO -->
+</div>
+{% endautoescape %}
+{% endblock %}
+
+{% block script %}
+<script>
+    function getDB() {
+        function color(text, color) {
+            return `<span style="color: ${color} !important;">${text}</span>`;
+        }
+
+        function parseTree(data, isArray) {
+            let s = "";
+
+            for (const [key, val] of Object.entries(data)) {
+                let k = `<i>${isArray ? color(key, "#098658") : key}</i>`;
+
+                if (typeof val === "string") {
+                    s += `<li>${k}: ${color(`"${val}"`, "#CE834A")}</li>`;
+                } else if (typeof val == "number") {
+                    s += `<li>${k}: ${color(val, "#098658")}</li>`
+                } else if (val == null) {
+                    s += `<li>${k}: ${color("null", "#1E2C83")}</li>`
+                } else if (Array.isArray(val)) {
+                    s += `
+                    <li>
+                        <span class="caret">${k}: ${color("Array", "#C586C0")}</span>
+                        <ul class="nested">${parseTree(val, true)}</ul>
+                    </li>
+                    `;
+                } else {
+                    s += `
+                    <li>
+                        <span class="caret">${k}: ${color("Object", "#C586C0")}</span>
+                        <ul class="nested">${parseTree(val, false)}</ul>
+                    </li>
+                    `;
+                }
+            }
+
+            return s;
+        }
+
+        $.post("/db", (data) => {
+            $("#db-tree").html(parseTree(data, false));
+        }).done(() => {
+            var toggler = document.getElementsByClassName("caret");
+            var i;
+
+            for (i = 0; i < toggler.length; i++) {
+                toggler[i].addEventListener("click", function() {
+                    this.parentElement.querySelector(".nested").classList.toggle("active");
+                    this.classList.toggle("caret-down");
+                })
+            }
+        });
+    }
+
+    (() => {
+        getDB();
+    })();
+</script>
+{% endblock %}
