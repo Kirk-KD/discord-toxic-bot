@@ -9,11 +9,24 @@
 {% block content %}
 {% autoescape false %}
 <div class="container" style="padding: 0px !important;">
-    <form action="/db" style="display: table !important; margin: 3px !important;">
-        <div style="display: table-cell !important; width: 100% !important;">
-            <input type="text" name="query" style="width: 100% !important;">
+    <form method="POST" action="/db" autocomplete="off">
+        <div class="container">
+            <div class="row">
+                <div class="column column-20">
+                    <select name="collection" id="query-sel">
+                        {% for name in collections %}
+                            <option value="{{ name }}">{{ name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="column column-66">
+                    <input type="text" name="query" style="width: 100% !important;" id="query-ipt">
+                </div>
+                <div class="column column-20">
+                    <input class="button-outline" type="submit" value="Query" id="query-btn">
+                </div>
+            </div>
         </div>
-        <input class="button-outline" type="submit" value="Query" style="margin-left: 10px;">
     </form>
 </div>
 
@@ -29,9 +42,16 @@
 
 {% block script %}
 <script>
-    function color(text, color) {
-        return `<span style="color: ${color} !important;">${text}</span>`;
-    }
+    // (() => {
+    //     $("#query-btn").on("click", () => {
+    //         $.post("/db", {
+    //             query: $("#query-ipt").value,
+    //             collection: $("#query-sel").value
+    //         }, data => {
+    //             $("#db-tree").html(parseTree(data, false));
+    //         }).then(init);
+    //     });
+    // })()
 
     function init() {
         var toggler = document.getElementsByClassName("caret");
@@ -46,6 +66,10 @@
     }
 
     function parseTree(data, isArray) {
+        function color(text, color) {
+            return `<span style="color: ${color} !important;">${text}</span>`;
+        }
+
         let s = "";
 
         for (const [key, val] of Object.entries(data)) {
@@ -74,7 +98,7 @@
             }
         }
 
-        return s || "<span>No results found.</span>";
+        return s || "(empty)";
     }
 
     function getDB() {
@@ -85,11 +109,11 @@
 </script>
 
 {% autoescape false %}
-{% if data != None %}
-<script>$("#db-tree").html(parseTree({{ data }}, false)).promise().done(init);</script>
-{% else %}
-<script>getDB();</script>
-{% endif %}
+    {% if data != None %}
+        <script>$("#db-tree").html(parseTree({{ data | tojson }}, false)).promise().done(init);</script>
+    {% else %}
+        <script>getDB();</script>
+    {% endif %}
 {% endautoescape %}
 
 {% endblock %}

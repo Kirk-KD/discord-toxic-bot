@@ -1,8 +1,7 @@
 import datetime
+import asyncio
 
 from src.bot.data import game_data
-
-import asyncio
 
 
 class Effect:

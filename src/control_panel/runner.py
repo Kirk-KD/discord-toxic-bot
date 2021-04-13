@@ -5,6 +5,7 @@ import json
 import os
 from pymongo import MongoClient
 from dotenv import load_dotenv
+import pymongo
 
 from src.logger import logger
 
@@ -30,25 +31,35 @@ def logs():
 
 @app.route("/db", methods=["POST", "GET"])
 def db_():
+    print(request.form)
     if request.method == "GET":
-        query_string = request.args.get("query")
-        if not query_string:
-            return render_template("db.html", data=None)
-
-        try:
-            data = [doc for doc in db["game"].find(json.loads(query_string))]
-            return render_template("db.html", data=data)
-        except JSONDecodeError:
-            return render_template("db.html", data=[]), 400
+        # query_string = request.args.get("query")
+        # if not query_string:
+        #     return render_template("db.html", data=None, collections=db.list_collection_names())
+        #
+        # try:
+        #     data = [doc for doc in db["game"].find(json.loads(query_string))]
+        #     return render_template("db.html", data=data, collections=db.list_collection_names())
+        # except JSONDecodeError:
+        #     return render_template("db.html", data=[], collections=db.list_collection_names()), 400
+        return render_template("db.html", data=None, collections=db.list_collection_names())
     else:
-        d = {}
+        query = request.form.get("query")
+        collection = request.form.get("collection")
 
-        for name in db.collection_names(include_system_collections=False):
-            d[name] = []
-            for c in db[name].find({}):
-                d[name].append(c)
+        if not (query or collection) or collection not in db.list_collection_names():
+            d = {}
 
-        return d
+            for name in db.collection_names(include_system_collections=False):
+                d[name] = []
+                for c in db[name].find({}):
+                    d[name].append(c)
+
+            return d
+        else:
+
+            data = [doc for doc in db[collection].find(json.loads(query))]
+            return render_template("db.html", data=data, collections=db.list_collection_names())
 
 
 def run():  # run from main.py

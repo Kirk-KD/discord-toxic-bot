@@ -2,10 +2,10 @@
 integers representing permission levels and a permission checking function
 """
 
-from src.bot.data import guilds_data
-
 import discord
 import os
+
+from src.bot.data import guilds_data
 
 
 def perm_check(member: discord.Member, perm: int):

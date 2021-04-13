@@ -1,15 +1,15 @@
-from src.bot.category import Category
-from src.bot.command import Command
-from src.bot.handler import handler
-from src.bot import perms
-
-from src.bot.util.parser import *
-from src.bot.util.bot import *
-
 import discord
 import asyncio
 
-from src.bot.util.time import timestamp, format_time, signature
+from src.bot.category import Category
+from src.bot.command import Command
+from src.bot.data import guilds_data
+from src.bot.handler import handler
+from src.bot import perms
+
+from src.util.bot import get_infractions, dm_input
+from src.util.parser import parse_int, parse_time, parse_bool, parse_member
+from src.util.time import timestamp, format_time, signature
 
 
 class Utilities(Category):
@@ -102,16 +102,19 @@ class Utilities(Category):
                     title="Slowmode is now off",
                     color=discord.Color.green()
                 ).set_footer(text=timestamp())
-                await message.reply(embed=embed, mention_author=False)
             else:
+                if amount > 21600:
+                    await message.reply("Slow mode can't be more than 21600 seconds idiot.", mention_author=False)
+                    return
+
                 embed = discord.Embed(
                     title="Slowmode set to {}".format(args[0]),
                     description="Now suffer from the slowness!",
                     color=discord.Color.green()
                 ).set_footer(text=timestamp())
-                await message.reply(embed=embed, mention_author=False)
 
             await message.channel.edit(slowmode_delay=amount)
+            await message.reply(embed=embed, mention_author=False)
 
     class Userinfo(Command):
         def __init__(self):

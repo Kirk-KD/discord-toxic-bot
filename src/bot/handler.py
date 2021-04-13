@@ -1,7 +1,7 @@
+import discord
+
 from src.bot.data import guilds_data
 from src.bot.perms import perm_check
-
-import discord
 
 
 class Handler:

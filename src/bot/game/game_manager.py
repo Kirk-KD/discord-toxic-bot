@@ -1,6 +1,6 @@
-from src.bot.game import player
-
 import discord
+
+from src.bot.game import player
 
 
 class GameManager:
