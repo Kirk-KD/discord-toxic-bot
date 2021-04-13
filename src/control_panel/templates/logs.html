@@ -1,38 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
+{% extends "base.html" %}
 
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles/custom.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles/milligram.css') }}">
+{% block title %}Logs{% endblock %}
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/custom/logs.css') }}">
+{% endblock %}
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+{% block content %}
+<div class="container logs-container" id="logs">
+    {% autoescape false %}
+        {% for log in logs[::-1] %}
+            {{ log.get_html() }}
+        {% endfor %}
+    {% endautoescape %}
+</div>
+{% endblock %}
 
-    <title>Toxic xD Control Panel</title>
-</head>
-<body>
-    <div class="container">
-        <div class="title-container">
-            <h2 class="float-left title-item">Toxic xD</h2>
-            <h3 class="float-right title-item">Logs</h3>
-        </div>
-        <div class="container logs" id="logs">
-            {% autoescape false %}
-                {% for log in logs[::-1] %}
-                    {{ log.get_html() }}
-                {% endfor %}
-            {% endautoescape %}
-        </div>
-    </div>
-
-    <script>
-        setInterval(() => {
-            $.post("/logs", (data) => {
-                $("#logs").html(data)
-            })
-        }, 1000);
-    </script>
-</body>
-</html>
+{% block script %}
+<script>
+    setInterval(() => {
+        $.post("/logs", (data) => {
+            $("#logs").html(data)
+        })
+    }, 1000);
+</script>
+{% endblock %}

@@ -1,14 +1,11 @@
-from src.bot.handler import handler
-from src.bot.data import guilds_data, game_data, stocks_data
-from src.logger import logger
-from src.bot.game.stocks_collection import stocks
-from src.bot.tasks_collection import BackgroundTasksCollection
-
-from src.bot.util.jsons import *
-from src.bot.game.game_manager import manager
-
 import discord
 import traceback
+
+from src.bot.handler import handler
+from src.bot.data import guilds_data, game_data, stocks_data
+from src.bot.tasks_collection import BackgroundTasksCollection
+from src.logger import logger
+from src.util.jsons import guild_json_setup, member_json_setup, player_json_setup
 
 
 class Toxic(discord.Client):

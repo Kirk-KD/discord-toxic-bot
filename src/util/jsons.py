@@ -1,9 +1,10 @@
-from src.bot.data import stocks_data
-from src.bot.util.time import *
-
 import json
 import discord
 import datetime
+
+from src.bot.data import stocks_data
+
+from src.util.time import format_time
 
 
 def read_json(file: str):
@@ -103,8 +104,6 @@ def player_json_setup():
 
     :return: dict
     """
-
-    from src.bot.game.stocks_collection import stocks
 
     return {
         "stats": {

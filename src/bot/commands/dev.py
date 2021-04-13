@@ -6,8 +6,7 @@ from src.bot.game.game_manager import manager
 from src.bot.game.shop import shop
 from src.bot.game.stocks_collection import stocks
 from src.bot.handler import handler
-from src.bot.util import jsons
-from src.bot.util.parser import parse_member, parse_int
+from src.util.parser import parse_member, parse_int
 from src.logger import logger
 
 

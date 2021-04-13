@@ -1,3 +1,6 @@
+import discord
+import random
+
 from src.bot.category import Category
 from src.bot.command import CooldownCommand
 from src.bot.emojis import item_emoji, item_image, emojis
@@ -6,12 +9,8 @@ from src.bot.game.shop import shop
 from src.bot.handler import handler
 from src.bot.game.stocks_collection import stocks
 from src.bot import perms
-
-from src.bot.util.game import *
-from src.bot.util.parser import *
-
-import discord
-import random
+from src.util.game import chance, multiplier, weighted_choice, parse_place
+from src.util.parser import parse_member, parse_int
 
 
 class Game(Category):
@@ -622,7 +621,7 @@ class Game(Category):
                 key=lambda m: manager.get_player(m).data["stats"]["txc"], reverse=True
             )
 
-            emojis = ":first_place: :second_place: :third_place:".split()
+            e = ":first_place: :second_place: :third_place:".split()
             embed = discord.Embed(
                 title="Top 10 rich bois in {}".format(message.guild.name),
                 description="",
@@ -632,7 +631,7 @@ class Game(Category):
             )
             for i, p in enumerate(members_sorted):
                 embed.description += "{} **{}** - {}\n".format(
-                    emojis[i] if i < 3 else ":small_orange_diamond:", manager.get_player(p).data["stats"]["txc"], p
+                    e[i] if i < 3 else ":small_orange_diamond:", manager.get_player(p).data["stats"]["txc"], p
                 )
                 if i == 9:
                     break

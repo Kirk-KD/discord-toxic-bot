@@ -1,11 +1,11 @@
 import asyncio
 import datetime
-
 import discord
 
 from src.bot.data import guilds_data, game_data
 from src.bot.game.stocks_collection import stocks
-from src.bot.util.time import string_to_datetime
+
+from src.util.time import string_to_datetime
 
 
 class BackgroundTasksCollection:
@@ -18,14 +18,6 @@ class BackgroundTasksCollection:
                 self.client.loop.create_task(await getattr(self, name)())
 
     def check_timer(self, member_data: dict, key: str):
-        """
-        checks if a timer is done in a member data.
-
-        :param member_data: dict
-        :param key: str
-        :return: bool
-        """
-
         return member_data["timers"][key] and string_to_datetime(member_data["timers"][key]) <= datetime.datetime.now()
 
     # tasks
@@ -43,7 +35,7 @@ class BackgroundTasksCollection:
             for guild in guilds_data.all():
                 if guild["data"]["initialised"]:
                     for member_id, member in guild["data"]["members"].items():
-                        if member["muted"] and string_to_datetime(member["timers"]["mute"]) <= datetime.datetime.now():
+                        if member["muted"] and self.check_timer(member, "mute"):
                             member["muted"] = False
                             member["timers"]["mute"] = None
 

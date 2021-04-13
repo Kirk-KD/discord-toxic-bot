@@ -1,9 +1,8 @@
 import random
+import discord
 
 from src.bot.data import game_data
 from src.bot.game import item
-
-import discord
 
 
 class Player:
