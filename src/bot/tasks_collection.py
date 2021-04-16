@@ -24,7 +24,7 @@ class BackgroundTasksCollection:
     async def task_update_stocks(self):
         await self.client.wait_until_ready()
         while not self.client.is_closed():
-            await asyncio.sleep(60 * 30)
+            await asyncio.sleep(60 * 60)
             stocks.update()
 
     async def task_timer_check(self):
@@ -64,3 +64,15 @@ class BackgroundTasksCollection:
                     if effect["end_time"] and string_to_datetime(effect["end_time"]) <= datetime.datetime.now():
                         member["data"]["effects"].remove(effect)
                         game_data.set(member["_id"], member)
+
+    async def task_streak_check(self):
+        await self.client.wait_until_ready()
+        while not self.client.is_closed():
+            await asyncio.sleep(1)
+
+            for player in game_data.all():
+                d = player["data"]
+
+                if (t := d["timers"]["streak"]) is not None and string_to_datetime(t) <= datetime.datetime.now():
+                    d["timers"]["streak"] = None
+                    game_data.set(player["_id"], {"data": d})

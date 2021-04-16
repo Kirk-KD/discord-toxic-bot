@@ -1,3 +1,5 @@
+import datetime
+
 import discord
 import random
 
@@ -11,6 +13,7 @@ from src.bot.game.stocks_collection import stocks
 from src.bot import perms
 from src.util.game import chance, multiplier, weighted_choice, parse_place
 from src.util.parser import parse_member, parse_int
+from src.util.time import format_time
 
 
 class Game(Category):
@@ -265,6 +268,9 @@ class Game(Category):
                              "Give money or items to other people!", perms.EVERYONE, 5)
 
         async def __call__(self, message, args, client):
+            if not await self.check_cooldown(message):
+                return
+
             if len(args) < 1:
                 await message.reply("Lel who are you giving stuff to idiot.", mention_author=False)
                 return
@@ -711,6 +717,9 @@ class Game(Category):
                              "They say you could become a rich boi doing this.", perms.EVERYONE, 5)
 
         async def __call__(self, message, args, client):
+            if not await self.check_cooldown(message):
+                return
+
             player = manager.get_player(message.author)
 
             if len(args) == 0:
@@ -722,10 +731,10 @@ class Game(Category):
                     color=discord.Color.blue()
                 )
 
-                for name in stocks.data.keys():
-                    stock = stocks.get_stock(name)
+                for s in stocks.data:
+                    stock = stocks.get_stock(s["_id"])
                     embed.add_field(
-                        name=name + " `{} owned`".format(player.data["stocks"][stock.name]),
+                        name=s["_id"] + " `{} owned`".format(player.data["stocks"][stock.name]),
                         value="**txc${}**".format(stock.current) + (
                             " :chart_with_upwards_trend:" if stock.record[-1] > stock.record[-2] else
                             (" :chart_with_downwards_trend:" if stock.record[-1] < stock.record[-2] else "")
@@ -754,7 +763,7 @@ class Game(Category):
                     )
 
                     await message.reply(file=discord.File(
-                        "stock_graphs/{}.png".format(stock.name.lower().replace(" ", "_"))
+                        stock.get_graph(), filename="{}.png".format(stock.name.lower().replace(" ", "_"))
                     ), embed=embed, mention_author=False)
 
                 elif args[0].lower() == "buy":
@@ -832,6 +841,54 @@ class Game(Category):
                         color=discord.Color.blue()
                     )
                     await message.reply(embed=embed, mention_author=False)
+
+    # cooldown
+    class Streak(CooldownCommand):
+        def __init__(self):
+            super().__init__(["streak", "streaks"], "streak", "Get a small price everyday and a big one on day 7!",
+                             perms.EVERYONE, 1)
+
+        async def __call__(self, message, args, client):
+            if not await self.check_cooldown(message):
+                return
+
+            player = manager.get_player(message.author)
+
+            if player.data["timers"]["streak"] is not None:
+                await message.reply(
+                    "Chill out bro, your can get your next daily prize at `{}`!".format(
+                        format_time(player.data["timers"]["streak"])
+                    ), mention_author=False
+                )
+                return
+
+            streak = player.data["stats"]["streak"]
+            txc = 420 + streak * (15 + streak // 5)
+            items = random.choices(["Apple", "Chocolate", "Coffee", "Cursed Seal", "Bank Token", "Toxic Water"],
+                                   weights=[15, 15, 8, 4, 3, 1],
+                                   k=random.choices([1, 2, 3, 4, 5], weights=[10, 5, 3, 2, 1], k=1)[0])
+            give_items = chance(55)
+
+            player.data["stats"]["streak"] += 1
+            player.data["timers"]["streak"] = str(datetime.datetime.now() + datetime.timedelta(days=1))
+
+            player.data["stats"]["txc"] += txc
+            [player.give_item(shop.get_item(name)) for name in items] if give_items else None
+
+            player.update_data()
+
+            embed = discord.Embed(
+                title="{}'s Daily Prize :hourglass:".format(message.author),
+                description="You got **txc${}**{}!".format(
+                    txc, " and {}".format(
+                        ", ".join(["{} **{}**".format(items.count(name), shop.get_item(name)) for name in set(items)])
+                    ) if give_items else ""
+                ),
+                color=discord.Color.gold()
+            ).set_footer(
+                text="Streak {}".format(streak)
+            )
+            await message.reply(embed=embed, mention_author=False)
 
 
 handler.add_category(Game)

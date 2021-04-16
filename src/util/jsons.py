@@ -109,11 +109,15 @@ def player_json_setup():
         "stats": {
             "txc": 1000,
             "exp": 0,
-            "multi": 0
+            "multi": 0,
+            "streak": 0
         },
         "bank": {
             "max": 5000,
             "curr": 0
+        },
+        "timers": {
+            "streak": None
         },
         "inv": {},
         "effects": [],

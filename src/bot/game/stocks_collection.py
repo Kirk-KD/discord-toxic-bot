@@ -31,17 +31,6 @@ class StocksCollection:
         for s in stocks_data.all():
             stock = self.get_stock(s["_id"])
             stock.update()
-            stocks_data.set(s["_id"], {"data": stock.record.copy()})
-
-    def get_stock_path(self, stock: Stock):
-        """
-        gets the path to a stock's image.
-
-        :param stock: Stock
-        :return: str
-        """
-
-        return "stock_graphs/{}.png".format(stock.name.lower().replace(" ", "_"))
 
 
 stocks = StocksCollection()

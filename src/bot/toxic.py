@@ -1,6 +1,7 @@
 import discord
 import traceback
 
+from src.bot.game.stocks_collection import stocks
 from src.bot.handler import handler
 from src.bot.data import guilds_data, game_data, stocks_data
 from src.bot.tasks_collection import BackgroundTasksCollection
@@ -30,7 +31,6 @@ class Toxic(discord.Client):
             )
         )
 
-        print('Logged in as {}'.format(self.user))
         logger.write_line("=" * 100)
         logger.info("CLIENT LOGIN")
 
@@ -65,9 +65,8 @@ class Toxic(discord.Client):
         if not game_data.get(member.id):
             game_data.add(member.id, {"data": player_json_setup()})
 
-
     async def on_message(self, message: discord.Message):
-        if not self.is_ready() or message.author.bot or type(message.channel) is not discord.TextChannel:
+        if message.author.bot or not isinstance(message.channel, discord.TextChannel):
             return
 
         msg = message.content.strip()
@@ -75,18 +74,21 @@ class Toxic(discord.Client):
             await handler.handle(message, self)
 
     async def on_error(self, event, *args, **kwargs):
-        if len(args) != 0:
-            message = args[0]
-            await message.reply("Hey uhh you broke me. Congrats. Error info has been recorded.")
-            logger.error("Error caused by \"{}\" when using command \"{}\". Error message:\n{}".format(
-                message.author, message.content, traceback.format_exc()
-            ))
-        else:
-            logger.error("Error occurred outside command usage. Error message:\n{}".format(
-                traceback.format_exc()
-            ))
+        try:
+            if len(args) != 0:
+                message = args[0]
+                await message.reply("Hey uhh you broke me. Congrats. Error info has been recorded.")
+                logger.error("Error caused by \"{}\" when using command \"{}\". Error message:\n{}".format(
+                    message.author, message.content, traceback.format_exc()
+                ))
+            else:
+                logger.error("Error occurred outside command usage. Error message:\n{}".format(
+                    traceback.format_exc()
+                ))
 
-        traceback.print_exc()
+            traceback.print_exc()
+        except discord.Forbidden:  # bot cannot send messages
+            pass
 
     def init_guilds(self):
         for guild in self.guilds:
@@ -111,3 +113,5 @@ class Toxic(discord.Client):
             for name in stock_names:
                 if not stocks_data.get(name):
                     stocks_data.add(name, {"data": []})
+
+            stocks.update()

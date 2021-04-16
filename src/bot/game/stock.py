@@ -1,9 +1,10 @@
-# TODO: HOW TO SEND PLOT GRAPH WITHOUT SAVING LOCALLY
-
+import io
 import random
 from math import exp, sqrt
 from matplotlib.figure import Figure
 from matplotlib.ticker import MaxNLocator
+
+from src.bot.data import stocks_data
 
 
 class Stock:
@@ -15,15 +16,13 @@ class Stock:
         self.current = self.record[-1]
 
     def update(self):
-        g = self.gbm()
-        self.record.append(g)
+        self.record.append(self.gbm())
         if len(self.record) > self.max_record:
             self.record.pop(0)
 
-        self.save_graph()
-        return g
+        stocks_data.set(self.name, {"data": self.record})
 
-    def save_graph(self):
+    def get_graph(self):
         marker_type = ("->" if self.record[-1] == self.record[-2] else
                        ("-^" if self.record[-1] >= self.record[-2] else "-v"))
 
@@ -32,7 +31,10 @@ class Stock:
         ax.plot(self.record, marker_type, markevery=[len(self.record) - 1])
         ax.yaxis.set_major_locator(MaxNLocator(integer=True))
 
-        fg.savefig("stock_graphs/{}.png".format(self.name.lower().replace(" ", "_")))
+        graph_data = io.BytesIO()
+        fg.savefig(graph_data)
+        graph_data.seek(0)
+        return graph_data
 
 
 # https://towardsdatascience.com/create-a-stock-price-simulator-with-python-b08a184f197d
