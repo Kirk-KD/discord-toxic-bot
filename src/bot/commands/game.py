@@ -1,16 +1,17 @@
 import datetime
-
 import discord
 import random
 
 from src.bot.category import Category
 from src.bot.command import CooldownCommand
+from src.bot.consts import beg_characters, quiz_topics
 from src.bot.emojis import item_emoji, item_image, emojis
 from src.bot.game.game_manager import manager
 from src.bot.game.shop import shop
 from src.bot.handler import handler
 from src.bot.game.stocks_collection import stocks
 from src.bot import perms
+
 from src.util.game import chance, multiplier, weighted_choice, parse_place
 from src.util.parser import parse_member, parse_int
 from src.util.time import format_time
@@ -32,15 +33,6 @@ class Game(Category):
                 return
 
             player = manager.get_player(message.author)
-            characters = [  # expand later
-                "The developer", "Toxic xD", "Trump", "Pewdiepie", "Brackeys", "Tim from twt",
-                "The kid that stole your candy when you were in kindergarten", "Rick Astley", "Stick Bug",
-                "That fat admin", "Meme man", "Developers of stackoverflow, programmer's saviors", "Monke",
-                "Big lizard", "That teacher who leaves extra homeworks for the weekends", "I", "you", "Wumpus",
-                "Dani Milkman", "Milkman Karlson", "Billy", "Billy's brother Willy", "Jacksepticeye",
-                "The soul who has been tortured by c++ for eternity", "Danny DeVito", "Danny DeYeeto",
-                "GrayStillPlays", "Github Cat", "linus"
-            ]
 
             if chance(70):
                 amount = multiplier(int(random.triangular(15, 500, 75)), player.data["stats"]["multi"])
@@ -52,7 +44,7 @@ class Game(Category):
                 embed = discord.Embed(
                     title="Got 'em",
                     description="**{}** felt bad for you and gave you **txc${}** lmaooo :money_mouth:".format(
-                        random.choice(characters), amount
+                        random.choice(beg_characters), amount
                     ),
                     color=discord.Color.green()
                 ).set_footer(text="big stonks")
@@ -62,7 +54,7 @@ class Game(Category):
                     title="No one cares",
                     description="**{}** walked right pass you and "
                                 "didn't waste their money on someone like you lol".format(
-                                    random.choice(characters)
+                                    random.choice(beg_characters)
                                 ),
                     color=discord.Color.red()
                 ).set_footer(text="stonkn't :(")
@@ -150,6 +142,28 @@ class Game(Category):
                     await message.reply(embed=embed, mention_author=False)
 
             player.update_data()
+
+    class Quiz(CooldownCommand):
+        def __init__(self):
+            super().__init__(["quiz"], "quiz", "Earn some money by doing quizzes.", perms.EVERYONE, 20)
+
+        async def __call__(self, message, args, client):
+            if not await self.check_cooldown(message):
+                return
+
+            quiz = random.choice(quiz_topics)
+            embed = discord.Embed(
+                title="Quiz :pencil:",
+                description="**{}**\n\n".format(quiz[0]) + "\n".join(
+                    ["**`{}`** {}".format("ABCDEFG"[i], c) for i, c in enumerate(random.sample(quiz[1], k=len(quiz[1])))]
+                ),
+                color=discord.Color.gold()
+            ).set_footer(
+                text="Level: {}".format(quiz[2])
+            )
+            await message.reply(embed=embed, mention_author=False)
+
+            # TODO
 
     class Balance(CooldownCommand):
         def __init__(self):
@@ -886,7 +900,7 @@ class Game(Category):
                 ),
                 color=discord.Color.gold()
             ).set_footer(
-                text="Streak {}".format(streak)
+                text="Day {}".format(streak)
             )
             await message.reply(embed=embed, mention_author=False)
 

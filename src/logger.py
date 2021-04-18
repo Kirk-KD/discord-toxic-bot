@@ -28,8 +28,8 @@ class Logger:
         self.logs = []
 
     def log(self, log_type: int, log_name: str, log_msg: str = ""):
-        s = " * [{}] [{}] {}\n".format(timestamp(), log_name, log_msg).strip(" ")
-        print(colored(s, color=["green", "yellow", "red"][log_type]))
+        s = " " + ("* [{}] [{}] {}\n".format(timestamp(), log_name, log_msg).strip(" "))
+        print(colored(s, color=[None, "yellow", "red"][log_type]))
 
         with open(self.fp, "a") as f:
             f.write(s)
