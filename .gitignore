@@ -7,4 +7,4 @@
 plans.txt
 logs.txt
 **/__pycache__
-/tests
+test.py

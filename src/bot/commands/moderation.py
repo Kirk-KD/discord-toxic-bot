@@ -215,6 +215,7 @@ class Moderation(Category):
         async def __call__(self, message, args, client):
             if len(args) < 1:
                 await message.reply("Who do I kick? You?", mention_author=False)
+                return
 
             kick_member = parse_member(message.guild, args[0])
             kick_reason = " ".join(args[1:]) if len(args) > 1 else "None given"

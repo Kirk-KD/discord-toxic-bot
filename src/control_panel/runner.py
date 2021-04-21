@@ -1,11 +1,10 @@
+import logging
 from json import JSONDecodeError
-
 from flask import Flask, render_template, redirect, request
 import json
 import os
 from pymongo import MongoClient
 from dotenv import load_dotenv
-import pymongo
 
 from src.logger import logger
 
@@ -14,6 +13,9 @@ cluster = MongoClient(os.getenv("MONGO"))
 db = cluster["toxic"]
 
 app = Flask(__name__)
+app.logger.disabled = True
+log = logging.getLogger('werkzeug')
+log.disabled = True
 
 
 @app.route("/")
@@ -31,17 +33,7 @@ def logs():
 
 @app.route("/db", methods=["POST", "GET"])
 def db_():
-    print(request.form)
     if request.method == "GET":
-        # query_string = request.args.get("query")
-        # if not query_string:
-        #     return render_template("db.html", data=None, collections=db.list_collection_names())
-        #
-        # try:
-        #     data = [doc for doc in db["game"].find(json.loads(query_string))]
-        #     return render_template("db.html", data=data, collections=db.list_collection_names())
-        # except JSONDecodeError:
-        #     return render_template("db.html", data=[], collections=db.list_collection_names()), 400
         return render_template("db.html", data=None, collections=db.list_collection_names())
     else:
         query = request.form.get("query")
@@ -57,8 +49,10 @@ def db_():
 
             return d
         else:
-
-            data = [doc for doc in db[collection].find(json.loads(query))]
+            try:
+                data = [doc for doc in db[collection].find(json.loads(query))]
+            except (JSONDecodeError, TypeError):
+                data = [doc for doc in db[collection].find({"_id": query})]
             return render_template("db.html", data=data, collections=db.list_collection_names())
 
 

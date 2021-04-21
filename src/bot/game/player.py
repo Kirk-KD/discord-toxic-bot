@@ -74,7 +74,7 @@ class Player:
 
         return item_.display_name in self.data["effects"]
 
-    def kill(self):
+    async def kill(self):
         """
         kills the player (removes all item, clear wallet) and returns if the player is actually dead.
 
@@ -85,13 +85,14 @@ class Player:
 
         if self.has_item(shop.get_item("Toxic Water")):
             self.remove_item(shop.get_item("Toxic Water"))
-            return False
-
-        self.data["stats"]["txc"] = 0
-        self.data["inv"] = {}
-        self.data["effects"] = []
-
-        return True
+            await self.member.send(
+                "You drank the Toxic Water at the last second before you die, and it saved you! That was close!"
+            )
+        else:
+            self.data["stats"]["txc"] = 0
+            self.data["inv"] = {}
+            self.data["effects"] = []
+            await self.member.send("Lmao you died noob. Buy some Toxic Water in the shop to save yourself next time!")
 
     async def gain_exp(self, amount: int = 1):
         """

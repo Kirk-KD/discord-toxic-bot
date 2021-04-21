@@ -42,17 +42,6 @@
 
 {% block script %}
 <script>
-    // (() => {
-    //     $("#query-btn").on("click", () => {
-    //         $.post("/db", {
-    //             query: $("#query-ipt").value,
-    //             collection: $("#query-sel").value
-    //         }, data => {
-    //             $("#db-tree").html(parseTree(data, false));
-    //         }).then(init);
-    //     });
-    // })()
-
     function init() {
         var toggler = document.getElementsByClassName("caret");
         var i;
@@ -79,6 +68,8 @@
                 s += `<li>${k}: ${color(`"${val}"`, "#CE834A")}</li>`;
             } else if (typeof val == "number") {
                 s += `<li>${k}: ${color(val, "#098658")}</li>`
+            } else if (typeof val == "boolean") {
+                s += `<li>${k}: ${color(val, "#C586C0")}</li>`
             } else if (val == null) {
                 s += `<li>${k}: ${color("null", "#1E2C83")}</li>`
             } else if (Array.isArray(val)) {

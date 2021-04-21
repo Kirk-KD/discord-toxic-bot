@@ -12,6 +12,9 @@ class Handler:
         self.categories.append(category())
 
     async def handle(self, message: discord.Message, client, content=None):
+        if not client.is_ready():
+            return
+
         msg = message.content.strip()[1:] if not content else content
         args = msg.split()
         name = args.pop(0).lower()
