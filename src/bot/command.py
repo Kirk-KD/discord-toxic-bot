@@ -1,6 +1,9 @@
-import datetime
 import discord
+import datetime
+import random
 
+from src.bot import perms
+from src.bot.consts import cooldown
 from src.bot.perms import perm_names
 
 from src.util.time import format_timedelta
@@ -31,10 +34,10 @@ class Command:
         )
 
 
-class CooldownCommand(Command):
-    def __init__(self, triggers: list, usage: str, description: str, perm: int, cooldown: int):
-        super().__init__(triggers, usage, description, perm)
-        self.cooldown = cooldown
+class GameCommand(Command):
+    def __init__(self, triggers: list, usage: str, description: str, cooldown_: int):
+        super().__init__(triggers, usage, description, perms.EVERYONE)
+        self.cooldown = cooldown_
         self.users = {}
 
     async def check_cooldown(self, message):
@@ -50,7 +53,7 @@ class CooldownCommand(Command):
         else:
             delta = self.users[message.author.id] - datetime.datetime.now()
             embed = discord.Embed(
-                title="Ayo stop spamming",
+                title=random.choice(cooldown),
                 description="You can use that command again after {}!".format(
                     format_timedelta(delta)
                 ),

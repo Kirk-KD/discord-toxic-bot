@@ -3,16 +3,16 @@ import discord
 import random
 
 from src.bot.category import Category
-from src.bot.command import CooldownCommand
-from src.bot.consts import beg_characters, quiz_topics
+from src.bot.command import GameCommand
 from src.bot.emojis import item_emoji, item_image, emojis
 from src.bot.game.game_manager import manager
 from src.bot.game.shop import shop
 from src.bot.handler import handler
 from src.bot.game.stocks_collection import stocks
-from src.bot import perms
 
-from src.util.game import chance, multiplier, weighted_choice, parse_place
+from src.bot.consts import beg, search
+
+from src.util.game import chance, multiplier, parse_place
 from src.util.parser import parse_member, parse_int
 from src.util.time import format_time
 
@@ -22,10 +22,10 @@ class Game(Category):
         super().__init__("Game", "A cross-server game with txc (toxic coin) as the currency!")
 
     # currency
-    class Beg(CooldownCommand):
+    class Beg(GameCommand):
         def __init__(self):
             super().__init__(
-                ["beg"], "beg", "Gotta start somewhere.", perms.EVERYONE, 20
+                ["beg"], "beg", "Gotta start somewhere.", 20
             )
 
         async def __call__(self, message, args, client):
@@ -44,7 +44,7 @@ class Game(Category):
                 embed = discord.Embed(
                     title="Got 'em",
                     description="**{}** felt bad for you and gave you **txc${}** lmaooo :money_mouth:".format(
-                        random.choice(beg_characters), amount
+                        random.choice(beg["characters"]), amount
                     ),
                     color=discord.Color.green()
                 ).set_footer(text="big stonks")
@@ -54,15 +54,15 @@ class Game(Category):
                     title="No one cares",
                     description="**{}** walked right pass you and "
                                 "didn't waste their money on someone like you lol".format(
-                                    random.choice(beg_characters)
+                                    random.choice(beg["characters"])
                                 ),
                     color=discord.Color.red()
                 ).set_footer(text="stonkn't :(")
                 await message.reply(embed=embed, mention_author=False)
 
-    class Search(CooldownCommand):
+    class Search(GameCommand):
         def __init__(self):
-            super().__init__(["search"], "search", "Search for stuff around you.", perms.EVERYONE, 20)
+            super().__init__(["search"], "search", "Search for stuff around you.", 20)
 
         async def __call__(self, message, args, client):
             if not await self.check_cooldown(message):
@@ -71,13 +71,8 @@ class Game(Category):
             player = manager.get_player(message.author)
             if chance(75):
                 if chance(7):
-                    amount = weighted_choice([(1, 0.92), (2, 0.06), (3, 0.02)])
-                    item = shop.get_item(weighted_choice([
-                        ("Apple", 0.4),
-                        ("Coffee", 0.3),
-                        ("Chocolate", 0.215),
-                        ("Toxic Water", 0.085)
-                    ]))
+                    amount = random.choices([1, 2, 3], [0.92, 0.06, 0.02])
+                    item = shop.get_item(random.choices(search["items"]["names"], search["items"]["weights"]))
                     player.give_item(item, amount)
                     await player.gain_exp(2)
 
@@ -90,7 +85,7 @@ class Game(Category):
                     )
                     await message.reply(embed=embed, mention_author=False)
                 else:
-                    amount = multiplier(int(random.triangular(10, 110, 50)), player.data["stats"]["multi"])
+                    amount = multiplier(int(random.triangular(10, 1000, 75)), player.data["stats"]["multi"])
                     player.data["stats"]["txc"] += amount
                     await player.gain_exp()
 
@@ -113,28 +108,11 @@ class Game(Category):
                     )
                     await message.reply(embed=embed, mention_author=False)
                 else:
-                    killed = player.kill()
-                    await message.author.send(
-                        "Lmao you died noob. Buy some Toxic Water in the shop to save yourself next time!"
-                        if killed else
-                        "You drank the Toxic Water at the last second before you die, and it saved you!"
-                    )
-
-                    death_options = [
-                        "You were hit by a car while searching in the middle of a street LMAO r u dumb?",
-                        "Lol you wasn't looking where you were going and fell in a sewer and died.",
-                        "Wow you searched all the way to Area51! And guess what? You were also shot in the head!",
-                        "You did an unintentional science experiment about gravity."
-                        "(Basically you fell down a cliff lol)",
-                        "You were killed by another player who was also searching for stuff.",
-                        "You tried to search inside you skull. Not only did you die, "
-                        "you also found out you have a very small and smooth brain.",
-                        "The developer thinks you are ugly and snapped you out of existence."
-                    ]
+                    player.kill()
 
                     embed = discord.Embed(
                         title="You died while searching lol",
-                        description=random.choice(death_options),
+                        description=random.choice(search["death"]),
                         color=discord.Color.red()
                     ).set_footer(
                         text="Haha noob"
@@ -143,33 +121,10 @@ class Game(Category):
 
             player.update_data()
 
-    class Quiz(CooldownCommand):
-        def __init__(self):
-            super().__init__(["quiz"], "quiz", "Earn some money by doing quizzes.", perms.EVERYONE, 20)
-
-        async def __call__(self, message, args, client):
-            if not await self.check_cooldown(message):
-                return
-
-            quiz = random.choice(quiz_topics)
-            embed = discord.Embed(
-                title="Quiz :pencil:",
-                description="**{}**\n\n".format(quiz[0]) + "\n".join(
-                    ["**`{}`** {}".format("ABCDEFG"[i], c) for i, c in enumerate(random.sample(quiz[1], k=len(quiz[1])))]
-                ),
-                color=discord.Color.gold()
-            ).set_footer(
-                text="Level: {}".format(quiz[2])
-            )
-            await message.reply(embed=embed, mention_author=False)
-
-            # TODO
-
-    class Balance(CooldownCommand):
+    class Balance(GameCommand):
         def __init__(self):
             super().__init__(
-                ["balance", "money", "txc", "bal"], "balance [<user>]", "See how rich you or other people are!",
-                perms.EVERYONE, 3
+                ["balance", "money", "txc", "bal"], "balance [<user>]", "See how rich you or other people are!", 3
             )
 
         async def __call__(self, message, args, client):
@@ -201,11 +156,10 @@ class Game(Category):
 
             await message.reply(embed=embed, mention_author=False)
 
-    class Deposit(CooldownCommand):
+    class Deposit(GameCommand):
         def __init__(self):
             super().__init__(["deposit", "dep"], "deposit <amount or \"all\">",
-                             "Put your money in the bank so you don't lose EVERYTHING when you die.",
-                             perms.EVERYONE, 3)
+                             "Put your money in the bank so you don't lose EVERYTHING when you die.", 3)
 
         async def __call__(self, message, args, client):
             if not await self.check_cooldown(message):
@@ -244,10 +198,10 @@ class Game(Category):
             await message.reply("Alright, **txc${}** deposited safely into the bank.".format(amount),
                                 mention_author=False)
 
-    class Withdraw(CooldownCommand):
+    class Withdraw(GameCommand):
         def __init__(self):
             super().__init__(["withdraw", "with"], "withdraw <amount or \"all\">",
-                             "Take some money out from the bank to spend!", perms.EVERYONE, 3)
+                             "Take some money out from the bank to spend!", 3)
 
         async def __call__(self, message, args, client):
             if not await self.check_cooldown(message):
@@ -276,10 +230,10 @@ class Game(Category):
             await message.reply("Alright, **txc${}** withdrawn from the bank.".format(amount),
                                 mention_author=False)
 
-    class Give(CooldownCommand):
+    class Give(GameCommand):
         def __init__(self):
             super().__init__(["give", "share", "gift"], "give <user> ((<item> [<amount>]) or (<amount>))",
-                             "Give money or items to other people!", perms.EVERYONE, 5)
+                             "Give money or items to other people!", 5)
 
         async def __call__(self, message, args, client):
             if not await self.check_cooldown(message):
@@ -368,10 +322,9 @@ class Game(Category):
             await message.reply(embed=embed, mention_author=False)
 
     # item
-    class Shop(CooldownCommand):
+    class Shop(GameCommand):
         def __init__(self):
-            super().__init__(["shop"], "shop [<item>]", "Visit the shop or show detail of an item!",
-                             perms.EVERYONE, 3)
+            super().__init__(["shop"], "shop [<item>]", "Visit the shop or show detail of an item!", 3)
 
         async def __call__(self, message, args, client):
             if not await self.check_cooldown(message):
@@ -421,10 +374,10 @@ class Game(Category):
 
                 await message.reply(file=item_image(item.display_name), embed=embed, mention_author=False)
 
-    class Inventory(CooldownCommand):  # might need to add page system later
+    class Inventory(GameCommand):  # might need to add page system later
         def __init__(self):
             super().__init__(["inventory", "inv", "items"], "inventory [<user>]",
-                             "See the things you or other people are somehow carrying all the time.", perms.EVERYONE, 3)
+                             "See the things you or other people are somehow carrying all the time.", 3)
 
         async def __call__(self, message, args, client):
             if not await self.check_cooldown(message):
@@ -450,9 +403,9 @@ class Game(Category):
 
             await message.reply(embed=embed, mention_author=False)
 
-    class Use(CooldownCommand):  # TODO: BETTER USE SYSTEM
+    class Use(GameCommand):  # TODO: BETTER USE SYSTEM
         def __init__(self):
-            super().__init__(["use"], "use <item>", "Use an item.", perms.EVERYONE, 3)
+            super().__init__(["use"], "use <item>", "Use an item.", 3)
 
         async def __call__(self, message, args, client):
             if not await self.check_cooldown(message):
@@ -486,9 +439,9 @@ class Game(Category):
                 else:
                     await message.reply(response, mention_author=False)
 
-    class Buy(CooldownCommand):
+    class Buy(GameCommand):
         def __init__(self):
-            super().__init__(["buy"], "buy <item> <amount>", "Buys an item from the shop.", perms.EVERYONE, 3)
+            super().__init__(["buy"], "buy <item> <amount>", "Buys an item from the shop.", 3)
 
         async def __call__(self, message, args, client):
             if not await self.check_cooldown(message):
@@ -533,10 +486,9 @@ class Game(Category):
             )
             await message.reply(embed=embed, mention_author=False)
 
-    class Sell(CooldownCommand):
+    class Sell(GameCommand):
         def __init__(self):
-            super().__init__(["sell"], "sell <item> <amount>", "Sell something 10% the original price.",
-                             perms.EVERYONE, 3)
+            super().__init__(["sell"], "sell <item> <amount>", "Sell something 10% the original price.", 3)
 
         async def __call__(self, message, args, client):
             if not await self.check_cooldown(message):
@@ -581,10 +533,10 @@ class Game(Category):
             await message.reply(embed=embed, mention_author=False)
 
     # info
-    class Profile(CooldownCommand):
+    class Profile(GameCommand):
         def __init__(self):
             super().__init__(["profile", "level", "levels"], "profile [<user>]",
-                             "See yours or other people's stats!", perms.EVERYONE, 3)
+                             "See yours or other people's stats!", 3)
 
         async def __call__(self, message, args, client):
             if not await self.check_cooldown(message):
@@ -625,11 +577,11 @@ class Game(Category):
 
             await message.reply(embed=embed, mention_author=False)
 
-    class Leaderboard(CooldownCommand):
+    class Leaderboard(GameCommand):
         def __init__(self):
             super().__init__(
                 ["leaderboard", "lb", "rich"], "leaderboard",
-                "Who's the richest in your server?", perms.EVERYONE, 1
+                "Who's the richest in your server?", 1
             )
 
         async def __call__(self, message, args, client):
@@ -659,10 +611,9 @@ class Game(Category):
             await message.reply(embed=embed, mention_author=False)
 
     # gamble
-    class Bet(CooldownCommand):
+    class Bet(GameCommand):
         def __init__(self):
-            super().__init__(["bet", "dice"], "bet <amount>", "Take some risk and hopefully win some money!",
-                             perms.EVERYONE, 20)
+            super().__init__(["bet", "dice"], "bet <amount>", "Take some risk and hopefully win some money!", 20)
 
         async def __call__(self, message, args, client):
             if not await self.check_cooldown(message):
@@ -724,11 +675,11 @@ class Game(Category):
             player.update_data()
             await message.reply(embed=embed, mention_author=False)
 
-    class Stocks(CooldownCommand):
+    class Stocks(GameCommand):
         def __init__(self):
             super().__init__(["stocks", "stock", "stonks", "stonk"],
                              "stocks [(\"buy\" or \"sell\" or \"view\") <stock>] [<amount>]",
-                             "They say you could become a rich boi doing this.", perms.EVERYONE, 5)
+                             "They say you could become a rich boi doing this.", 5)
 
         async def __call__(self, message, args, client):
             if not await self.check_cooldown(message):
@@ -857,10 +808,9 @@ class Game(Category):
                     await message.reply(embed=embed, mention_author=False)
 
     # cooldown
-    class Streak(CooldownCommand):
+    class Streak(GameCommand):
         def __init__(self):
-            super().__init__(["streak", "streaks"], "streak", "Get a small price everyday and a big one on day 7!",
-                             perms.EVERYONE, 1)
+            super().__init__(["streak", "streaks"], "streak", "Get a small price everyday and a big one on day 7!", 1)
 
         async def __call__(self, message, args, client):
             if not await self.check_cooldown(message):

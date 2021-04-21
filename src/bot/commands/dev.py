@@ -89,5 +89,12 @@ class Dev(Category):
         async def __call__(self, message, args, client):
             logger.info(" ".join(args))
 
+    class Count(Command):
+        def __init__(self):
+            super().__init__(["count"], "count", "count servers.", perms.GLOBAL_DEV)
+
+        async def __call__(self, message, args, client):
+            await message.reply("> There are {} guilds.".format(len(client.guilds)), mention_author=False)
+
 
 handler.add_category(Dev)

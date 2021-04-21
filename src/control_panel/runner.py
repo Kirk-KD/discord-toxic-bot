@@ -1,11 +1,10 @@
+import logging
 from json import JSONDecodeError
-
 from flask import Flask, render_template, redirect, request
 import json
 import os
 from pymongo import MongoClient
 from dotenv import load_dotenv
-import pymongo
 
 from src.logger import logger
 
@@ -14,6 +13,9 @@ cluster = MongoClient(os.getenv("MONGO"))
 db = cluster["toxic"]
 
 app = Flask(__name__)
+app.logger.disabled = True
+log = logging.getLogger('werkzeug')
+log.disabled = True
 
 
 @app.route("/")
