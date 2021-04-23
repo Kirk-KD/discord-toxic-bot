@@ -21,7 +21,7 @@ class Toxic(discord.Client):
         super().__init__(**options)
 
     # events
-    async def on_ready(self):
+    async def on_connect(self):
         logger.info("INITIALISING DATABASE...")
 
         timer = Timer()
@@ -29,6 +29,7 @@ class Toxic(discord.Client):
         self.init_stocks()
         logger.timed(timer, "DB Initialization")
 
+    async def on_ready(self):
         await self.change_presence(
             status=discord.Status.idle,
             activity=discord.Activity(
@@ -73,7 +74,7 @@ class Toxic(discord.Client):
             game_data.add(member.id, {"data": player_json_setup()})
 
     async def on_message(self, message: discord.Message):
-        if message.author.bot or not isinstance(message.channel, discord.TextChannel):
+        if message.author.bot or not isinstance(message.channel, discord.TextChannel) or not self.is_ready():
             return
 
         msg = message.content.strip()
@@ -95,8 +96,6 @@ class Toxic(discord.Client):
                 logger.error("Error occurred outside command usage. Error message:\n{}".format(
                     traceback.format_exc()
                 ))
-
-            traceback.print_exc()
         except discord.Forbidden:  # bot cannot send messages
             pass
 

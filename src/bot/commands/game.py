@@ -830,7 +830,7 @@ class Game(Category):
             txc = 420 + streak * (15 + streak // 5)
             items = random.choices(["Apple", "Chocolate", "Coffee", "Cursed Seal", "Bank Token", "Toxic Water"],
                                    weights=[15, 15, 8, 4, 3, 1],
-                                   k=random.choices([1, 2, 3, 4, 5], weights=[10, 5, 3, 2, 1], k=1)[0])
+                                   k=random.choices([1, 2, 3, 4, 5], weights=[15, 5, 3, 2, 1], k=1)[0])
             give_items = chance(55)
 
             player.data["stats"]["streak"] += 1
