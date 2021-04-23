@@ -12,9 +12,6 @@ class Handler:
         self.categories.append(category())
 
     async def handle(self, message: discord.Message, client, content=None):
-        if not client.is_ready():
-            return
-
         msg = message.content.strip()[1:] if not content else content
         args = msg.split()
         name = args.pop(0).lower()
@@ -39,14 +36,14 @@ class Handler:
 
     def get_command(self, name: str):
         for category in self.categories:
-            if command := category.get_command(name):
+            if (command := category.get_command(name)) and not category.hidden:
                 return command
 
         return None
 
     def get_category(self, name: str):
         for category in self.categories:
-            if category.name.lower() == name.lower() and not category.hidden:
+            if (category.name.lower() == name.lower()) and not category.hidden:
                 return category
 
         return None
