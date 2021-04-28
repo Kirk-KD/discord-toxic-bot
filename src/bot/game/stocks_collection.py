@@ -3,8 +3,12 @@ from src.bot.game.stock import Stock
 
 
 class StocksCollection:
-    def __init__(self):
-        self.data = stocks_data.all()
+    """
+    a wrapper for stocks_data.
+    """
+
+    def all(self):
+        return stocks_data.all()
 
     def get_stock(self, name: str):
         """

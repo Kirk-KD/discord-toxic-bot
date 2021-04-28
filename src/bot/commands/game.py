@@ -696,7 +696,7 @@ class Game(Category):
                     color=discord.Color.blue()
                 )
 
-                for s in stocks.data:
+                for s in stocks.all():
                     stock = stocks.get_stock(s["_id"])
                     embed.add_field(
                         name=s["_id"] + " `{} owned`".format(player.data["stocks"][stock.name]),
