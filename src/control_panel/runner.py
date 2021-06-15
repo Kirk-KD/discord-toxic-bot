@@ -28,7 +28,7 @@ def logs():
     if request.method == "GET":
         return render_template("logs.html", logs=logger.logs)
     else:
-        return "".join([log.get_html() for log in logger.logs[::-1]])
+        return "".join([log_item.get_html() for log_item in logger.logs[::-1]])
 
 
 @app.route("/db", methods=["POST", "GET"])
@@ -54,6 +54,11 @@ def db_():
             except (JSONDecodeError, TypeError):
                 data = [doc for doc in db[collection].find({"_id": query})]
             return render_template("db.html", data=data, collections=db.list_collection_names())
+
+
+@app.route("/dbl-on-upvote", methods=["POST"])
+def dbl_on_upvote():
+    pass
 
 
 def run():  # run from main.py

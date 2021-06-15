@@ -36,7 +36,7 @@ class Handler:
 
     def get_command(self, name: str):
         for category in self.categories:
-            if (command := category.get_command(name)) and not category.hidden:
+            if command := category.get_command(name):
                 return command
 
         return None

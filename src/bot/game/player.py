@@ -112,7 +112,7 @@ class Player:
             await self.member.send("Ayy you leveled up to level {}!".format(self.data["stats"]["exp"] // 100))
 
     def multiplier(self, amount: int):
-        return amount + round(amount * (self.data["stats"]["multi"] / 100))
+        return round(amount + round(amount * (self.data["stats"]["multi"] / 100)))
 
     def update_data(self):
         game_data.set(self.member.id, {"data": self.data})

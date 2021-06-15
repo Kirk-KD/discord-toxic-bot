@@ -305,7 +305,7 @@ class Utilities(Category):
                 await message.reply(embed=embed, mention_author=False)
 
             else:
-                if category := handler.get_category(args[0].lower()):
+                if (category := handler.get_category(args[0].lower())) and not category.hidden:
                     embed = discord.Embed(
                         title="Help of category `{}`".format(category.name),
                         color=discord.Color.blue(),
@@ -317,7 +317,7 @@ class Utilities(Category):
 
                     await message.reply(embed=embed, mention_author=False)
 
-                elif command := handler.get_command(args[0].lower()):
+                elif (command := handler.get_command(args[0].lower())) and not command.category.hidden:
                     embed = discord.Embed(
                         title="Help of command `{}`".format(command.name),
                         color=discord.Color.blue(),

@@ -12,7 +12,9 @@ class Category:
 
         for command in command_names:
             if inspect.isclass(getattr(self, command)):
-                self.commands.append(getattr(self, command)())
+                c = getattr(self, command)()
+                c.category = self
+                self.commands.append(c)
 
     def get_command(self, name: str):
         for command in self.commands:

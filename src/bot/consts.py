@@ -10,6 +10,15 @@ beg = {
     ]
 }
 
+roast = {
+    "characters": [
+        "Pewdiepie", "Brackeys", "Rick Astley", "Meme Man", "Dani", "Karlson", "GrayStillPlays", "Linus Tech Tip",
+        "Gordan Ramsay", "John Cena", "Dwayne Johnson", "Kim Jong-un", "Trump", "Wumpus", "Monke", "Elon Musk",
+        "Jacksepticeye", "Ken", "Lady D", "Hitman", "Bill Gates", "Joe Biden", "Harry Potter", "The Dev"
+    ],
+    "chances": [70, 95, 90, 90, 90, 99, 85, 80, 60, 95, 90, 99, 99, 90, 90, 85, 80, 75, 80, 80, 90, 90, 80, 10]
+}
+
 search = {
     "death": [
         "You were hit by a car while searching in the middle of a street LMAO are you dumb?",

@@ -35,6 +35,23 @@ class Dev(Category):
 
             await message.reply("> Stocks data reset.", mention_author=False)
 
+    class ResetBalance(Command):
+        def __init__(self):
+            super().__init__(["resetbalance", "rb"], "resetbalance <user>", "Reset a user's balance.",
+                             perm=perms.GLOBAL_DEV)
+
+        async def __call__(self, message, args, client):
+            if len(args) > 0:
+                target = parse_member(message.guild, args[0])
+                player = manager.get_player(target) if target else None
+                if player:
+                    player.data["stats"]["txc"] = 0
+                    player.data["bank"]["curr"] = 200
+                    player.data["bank"]["max"] = 1000
+                    player.update_data()
+
+                    await message.reply("> Player balance cleared.", mention_author=False)
+
     class UpdateStocks(Command):
         def __init__(self):
             super().__init__(["updatestocks", "us"], "updatestocks", "update stocks.", perm=perms.GLOBAL_DEV)
@@ -95,6 +112,7 @@ class Dev(Category):
 
         async def __call__(self, message, args, client):
             await message.reply("> There are {} guilds.".format(len(client.guilds)), mention_author=False)
+            await message.author.send("\n".join([g.name for g in client.guilds]))
 
 
 handler.add_category(Dev)

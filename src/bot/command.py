@@ -4,13 +4,14 @@ import random
 
 from src.bot import perms
 from src.bot.consts import cooldown
-from src.bot.perms import perm_names
+from src.bot.perms import perm_names, perm_check, GLOBAL_DEV
 
 from src.util.time import format_timedelta
 
 
 class Command:
     def __init__(self, triggers: list, usage: str, description: str, perm: int):
+        self.category = None
         self.triggers = triggers
         self.name = self.triggers[0]
         self.usage = usage
@@ -41,8 +42,8 @@ class GameCommand(Command):
         self.users = {}
 
     async def check_cooldown(self, message):
-        # if perm_check(message.author, GLOBAL_DEV):  # dev bypass cooldown
-        #     return True
+        if perm_check(message.author, GLOBAL_DEV):  # dev bypass cooldown
+            return True
         self.users[message.author.id] = (self.users[message.author.id]
                                          if message.author.id in self.users.keys()
                                          else datetime.datetime.now())

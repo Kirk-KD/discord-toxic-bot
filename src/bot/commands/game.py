@@ -1,3 +1,4 @@
+import asyncio
 import datetime
 import discord
 import random
@@ -10,7 +11,7 @@ from src.bot.game.shop import shop
 from src.bot.handler import handler
 from src.bot.game.stocks_collection import stocks
 
-from src.bot.consts import beg, search
+from src.bot.consts import beg, search, roast
 
 from src.util.game import chance, multiplier, parse_place
 from src.util.parser import parse_member, parse_int
@@ -59,6 +60,76 @@ class Game(Category):
                     color=discord.Color.red()
                 ).set_footer(text="stonkn't :(")
                 await message.reply(embed=embed, mention_author=False)
+
+    class Roast(GameCommand):
+        def __init__(self):
+            super().__init__(
+                ["roast"], "roast", "Take your chance in earning money by roasting a celebrity, or getting "
+                                    "beaten to death by a their fans.", 25
+            )
+
+        async def __call__(self, message, args, client):
+            if not await self.check_cooldown(message):
+                return
+
+            player = manager.get_player(message.author)
+
+            indexes = random.sample(range(len(roast["chances"])), 3)
+            options = [roast["characters"][i] for i in indexes]
+
+            embed = discord.Embed(
+                title="Roast",
+                description="Which of these arrogant jerks do you want to roast for dinner today?\n"
+                            "Choose in 30 seconds!\n\n`{}`".format(
+                                "` `".join(options)
+                            ),
+                color=discord.Color.blurple()
+            )
+            await message.reply(embed=embed, mention_author=False)
+
+            def check(m: discord.Message):
+                return m.author == message.author and m.channel == message.channel
+
+            try:
+                user_input = await client.wait_for("message", check=check, timeout=30)
+                idx = -1
+                if user_input.content in list("123"):
+                    idx = int(user_input.content) - 1
+                elif user_input.content.lower() in (options_lower := [o.lower() for o in options]):
+                    idx = options_lower.index(user_input.content.lower())
+
+                if idx == -1:
+                    await message.reply("Lol that person is not even here, you forgot to take your schizophrenia "
+                                        "pill my dude.", mention_author=False)
+                else:
+                    character = options[idx]
+                    s_chance = roast["chances"][indexes[idx]]
+
+                    if chance(s_chance):
+                        amount = player.multiplier(5000 * (1 - s_chance * 0.01) * 0.6)
+                        player.data["stats"]["txc"] += amount
+                        await player.gain_exp()
+
+                        player.update_data()
+
+                        embed = discord.Embed(
+                            title="Ez",
+                            description="LMAO your roast was so good, **{}**'s fans are roasting along side with you! "
+                                        "**{}** payed you **txc${}** to settle the media down.".format(
+                                            character, character, amount
+                                        ),
+                            color=discord.Color.green()
+                        ).set_footer(text="They are toast now")
+                        await message.reply(embed=embed, mention_author=False)
+                    else:
+                        await player.kill()
+                        await message.reply("After **{}**'s fans heard your roast, they put up a fire and literally "
+                                            "roasted you. You are now a fine charcoal.".format(character),
+                                            mention_author=False)
+
+            except asyncio.TimeoutError:
+                await message.reply("LMAO you couldn't decide and just stood there like an "
+                                    "absolute idiot until they all left.", mention_author=False)
 
     class Search(GameCommand):
         def __init__(self):
@@ -517,7 +588,6 @@ class Game(Category):
                 await message.reply("Lol you don't even have enough, stop humiliating yourself.", mention_author=False)
                 return
 
-            print(amount)
             txc_gain = player.multiplier(item.price // 10 * amount)
             player.remove_item(item, amount)
             player.data["stats"]["txc"] += txc_gain
