@@ -1,4 +1,5 @@
 import discord
+from discord_components import Button, ButtonStyle, InteractionType
 import asyncio
 
 from src.bot.category import Category
@@ -34,7 +35,13 @@ class Utilities(Category):
                 value="<" + str(client).split()[-1]
             ).set_footer(text=timestamp())
 
-            await message.reply(embed=embed, mention_author=False)
+            await message.reply(embed=embed, mention_author=False, components=[
+                Button(label="omg a button wooo so cool.")
+            ])
+
+            interaction = await client.wait_for("button_click", check=lambda i: (i.channel == message.channel and
+                                                                                 i.user == message.author))
+            await interaction.respond(content="Button clicked")
 
     class Clear(Command):
         def __init__(self):

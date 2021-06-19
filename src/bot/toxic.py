@@ -1,7 +1,7 @@
 import datetime
-
 import discord
 from discord.ext import tasks
+from discord_components import DiscordComponents
 import traceback
 
 from src.bot.game.stocks_collection import stocks
@@ -30,11 +30,13 @@ class Toxic(discord.Client):
         logger.timed(timer, "DB Initialization")
 
     async def on_ready(self):
+        DiscordComponents(self)
+
         await self.change_presence(
             status=discord.Status.idle,
             activity=discord.Activity(
                 type=discord.ActivityType.playing,
-                name="_help to get help noobs"
+                name="WARNING: TESTING MODE"
             )
         )
 
