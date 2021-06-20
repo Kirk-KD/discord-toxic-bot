@@ -8,7 +8,7 @@ from src.bot.game.stocks_collection import stocks
 from src.bot.handler import handler
 from src.bot.data import guilds_data, game_data, stocks_data
 from src.logger import logger, Timer
-from src.util.jsons import guild_json_setup, member_json_setup, player_json_setup
+from src.util.jsons import guild_dict_setup, member_dict_setup, player_dict_setup
 from src.util.time import string_to_datetime
 
 
@@ -46,7 +46,7 @@ class Toxic(discord.Client):
 
     async def on_guild_join(self, guild: discord.Guild):
         if not guilds_data.get(guild.id):
-            guilds_data.add(guild.id, {"data": guild_json_setup(guild)})
+            guilds_data.add(guild.id, {"data": guild_dict_setup(guild)})
 
         for member in guild.members:
             if member.bot:
@@ -54,11 +54,11 @@ class Toxic(discord.Client):
 
             g_data = guilds_data.get(guild.id)
             if str(member.id) not in g_data["members"].keys():
-                g_data["members"][str(member.id)] = member_json_setup()
+                g_data["members"][str(member.id)] = member_dict_setup()
             guilds_data.set(guild.id, {"data": g_data})
 
             if not game_data.get(member.id):
-                game_data.add(member.id, {"data": player_json_setup()})
+                game_data.add(member.id, {"data": player_dict_setup()})
 
     async def on_member_join(self, member: discord.Member):
         if member.bot:
@@ -67,11 +67,11 @@ class Toxic(discord.Client):
         guild = member.guild
         g_data = guilds_data.get(guild.id)
         if str(member.id) not in g_data["members"].keys():
-            g_data["members"][str(member.id)] = member_json_setup()
+            g_data["members"][str(member.id)] = member_dict_setup()
         guilds_data.set(guild.id, {"data": g_data})
 
         if not game_data.get(member.id):
-            game_data.add(member.id, {"data": player_json_setup()})
+            game_data.add(member.id, {"data": player_dict_setup()})
 
     async def on_message(self, message: discord.Message):
         if message.author.bot or not isinstance(message.channel, discord.TextChannel) or not self.is_ready():
@@ -156,7 +156,7 @@ class Toxic(discord.Client):
     def init_guilds(self):
         for guild in self.guilds:
             if not guilds_data.get(guild.id):
-                guilds_data.add(guild.id, {"data": guild_json_setup(guild)})
+                guilds_data.add(guild.id, {"data": guild_dict_setup(guild)})
 
             for member in guild.members:
                 if member.bot:
@@ -164,11 +164,11 @@ class Toxic(discord.Client):
 
                 g_data = guilds_data.get(guild.id)
                 if str(member.id) not in g_data["members"].keys():
-                    g_data["members"][str(member.id)] = member_json_setup()
+                    g_data["members"][str(member.id)] = member_dict_setup()
                 guilds_data.set(guild.id, {"data": g_data})
 
                 if not game_data.get(member.id):
-                    game_data.add(member.id, {"data": player_json_setup()})
+                    game_data.add(member.id, {"data": player_dict_setup()})
 
     def init_stocks(self):
         if stocks_data.all().count() == 0:

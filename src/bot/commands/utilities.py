@@ -8,7 +8,7 @@ from src.bot.handler import handler
 from src.bot import perms
 
 from src.util.bot import get_infractions, dm_input
-from src.util.parser import parse_int, parse_time, parse_bool, parse_member
+from src.util.parser import parse_int, parse_time, parse_bool, parse_member, parse_channel
 from src.util.time import timestamp, format_time, signature
 
 
@@ -166,6 +166,77 @@ class Utilities(Category):
             )
 
             return embed
+
+    class Giveaway(Command):
+        def __init__(self):
+            super().__init__(["giveaway", "ga"],
+                             "giveaway (\"create\" or (\"reroll\" <giveaway_id>) or "
+                             "(\"restart\" <giveaway_id>) or (\"delete\" <giveaway_id>))",
+                             "Create and manage giveaways.", perms.OWNERS)
+
+        async def __call__(self, message, args, client):
+            if len(args) == 0:
+                await message.reply(
+                    "Pass in the second argument (`create`/`reroll`/`restart`/`delete`) ya idiot.",
+                    mention_author=False
+                )
+                return
+
+            action = args[0].lower()
+            if action == "create":
+                def check(m):
+                    return m.channel == message.channel and m.author == message.author
+
+                try:
+                    # get giveaway name
+                    await message.reply("Wanna start a giveaway huh. What is the name/prize of the giveaway?",
+                                        mention_author=False)
+                    g_name = (await client.wait_for("message", check=check, timeout=30)).content
+
+                    # get giveaway winners
+                    await message.reply("How many winners are there?", mention_author=False)
+                    g_winners = parse_int((await client.wait_for("message", check=check, timeout=30)).content)
+                    if g_winners == 0:
+                        await message.reply("LMAO imagine making a giveaway with 0 winners.", mention_author=False)
+                        return
+                    if g_winners is None:
+                        await message.reply("That is not a number my man.", mention_author=False)
+                        return
+
+                    # get giveaway duration
+                    await message.reply("How long will the giveaway last?", mention_author=False)
+                    g_duration = parse_time((await client.wait_for("message", check=check, timeout=30)).content)
+                    if not g_duration:
+                        await message.reply("Dude give me a valid time (eg 2d12h30m15s).", mention_author=False)
+                        return
+
+                    # get giveaway channel
+                    await message.reply("Finally, where will the giveaway be? Copy the channel ID and send it here.",
+                                        mention_author=False)
+                    g_channel = parse_channel(
+                        message.guild, (await client.wait_for("message", check=check, timeout=30)).content
+                    )
+                    if not g_channel or type(g_channel) is not discord.TextChannel:
+                        await message.reply("Either I can't find the channel, or that channel you gave me "
+                                            "isn't a text channel.", mention_author=False)
+
+                except asyncio.TimeoutError:
+                    await message.reply("Why bother me when you don't even answer my questions.", mention_author=False)
+
+            elif action == "reroll":
+                pass
+
+            elif action == "restart":
+                pass
+
+            elif action == "delete":
+                pass
+
+            else:
+                await message.reply(
+                    "Damn bro, you really thought I can do anything other than "
+                    "`create`, `reroll`, `restart`, and `delete`?", mention_author=False
+                )
 
     class Setup(Command):
         def __init__(self):

@@ -1,7 +1,7 @@
-from src.bot.data import game_data
+from src.bot.data import guilds_data
 
 
-for player in game_data.all():
-    d = player["data"]
-    del d["streak"]
-    game_data.set(player["_id"], {"data": d})
+for guild in guilds_data.all():
+    d = guild["data"]
+    d["giveaways"] = {}
+    guilds_data.set(guild["_id"], d)

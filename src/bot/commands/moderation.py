@@ -8,7 +8,7 @@ from src.bot.handler import handler
 from src.bot import perms
 from src.util.bot import get_infractions
 
-from src.util.jsons import infraction_json_setup
+from src.util.jsons import infraction_dict_setup
 from src.util.parser import parse_member, parse_time, parse_int
 from src.util.time import format_time, signature
 
@@ -66,7 +66,7 @@ class Moderation(Category):
             member_data = guild_data["members"][str(member.id)]
 
             member_data["infractions"].append(
-                infraction_json_setup("Mute", reason, datetime.datetime.now())
+                infraction_dict_setup("Mute", reason, datetime.datetime.now())
             )
             member_data["timers"]["mute"] = \
                 (str(datetime.datetime.now() + datetime.timedelta(0, time.total_seconds()))
@@ -183,7 +183,7 @@ class Moderation(Category):
             # add infraction
             guild_data = guilds_data.get(message.guild.id)
             guild_data["members"][str(warn_member.id)]["infractions"].append(
-                infraction_json_setup("Warn", warn_reason, datetime.datetime.now())
+                infraction_dict_setup("Warn", warn_reason, datetime.datetime.now())
             )
             guilds_data.set(message.guild.id, {"data": guild_data})
 
@@ -238,7 +238,7 @@ class Moderation(Category):
             # add infraction
             guild_data = guilds_data.get(message.guild.id)
             guild_data["members"][str(kick_member.id)]["infractions"].append(
-                infraction_json_setup("Kick", kick_reason, datetime.datetime.now())
+                infraction_dict_setup("Kick", kick_reason, datetime.datetime.now())
             )
             guilds_data.set(message.guild.id, {"data": guild_data})
 
@@ -317,7 +317,7 @@ class Moderation(Category):
             member_data = guild_data["members"][str(member.id)]
 
             member_data["infractions"].append(
-                infraction_json_setup("Ban", reason, datetime.datetime.now())
+                infraction_dict_setup("Ban", reason, datetime.datetime.now())
             )
             member_data["timers"]["ban"] = \
                 (str(datetime.datetime.now() + datetime.timedelta(0, time.total_seconds()))

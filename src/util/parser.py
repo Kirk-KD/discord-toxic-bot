@@ -73,3 +73,23 @@ def parse_member(guild: discord.Guild, user_id: str):
             return m
 
     return None
+
+
+def parse_channel(guild: discord.Guild, channel_id: str):
+    """
+    returns a Channel if found one in guild using channel_id, None otherwise
+
+    :param guild: Guild
+    :param channel_id: str
+    :return: Channel or None
+    """
+
+    if not parse_int(channel_id) and not parse_int(channel_id[2:-1]):
+        return None
+
+    for c in guild.channels:
+        print(c.id, (parse_int(channel_id) if parse_int(channel_id) is not None else parse_int(channel_id[2:-1])))
+        if c.id == (parse_int(channel_id) if parse_int(channel_id) is not None else parse_int(channel_id[2:-1])):
+            return c
+
+    return None
