@@ -8,7 +8,7 @@ from src.bot.handler import handler
 from src.bot import perms
 from src.util.bot import get_infractions
 
-from src.util.jsons import infraction_dict_setup
+from src.util.dicts import infraction_dict_setup
 from src.util.parser import parse_member, parse_time, parse_int
 from src.util.time import format_time, signature
 

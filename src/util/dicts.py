@@ -19,7 +19,8 @@ def guild_dict_setup(guild: discord.Guild):
             "bot_channels": [],
             "welcome_channel": None
         },
-        "members": {}
+        "members": {},
+        "giveaways": []
     }
 
     for member in guild.members:
@@ -71,11 +72,13 @@ def player_dict_setup():
     }
 
 
-def giveaway_dict_setup(name: str, start_time: datetime.datetime, duration: datetime.timedelta, winners: int):
+def giveaway_dict_setup(name: str, start_time: datetime.datetime, end_time: datetime.datetime,
+                        winners: int, channel: discord.TextChannel):
     return {
         "name": name,
-        "start": format_time(start_time),
-        "duration": duration,
+        "start": str(start_time),
+        "end": str(end_time),
         "winners": winners,
-        "participants": []
+        "channel": channel.id,
+        "done": False
     }

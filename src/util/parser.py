@@ -88,7 +88,6 @@ def parse_channel(guild: discord.Guild, channel_id: str):
         return None
 
     for c in guild.channels:
-        print(c.id, (parse_int(channel_id) if parse_int(channel_id) is not None else parse_int(channel_id[2:-1])))
         if c.id == (parse_int(channel_id) if parse_int(channel_id) is not None else parse_int(channel_id[2:-1])):
             return c
 

@@ -1,5 +1,6 @@
+import asyncio
 import datetime
-
+import random
 import discord
 from discord.ext import tasks
 import traceback
@@ -8,7 +9,7 @@ from src.bot.game.stocks_collection import stocks
 from src.bot.handler import handler
 from src.bot.data import guilds_data, game_data, stocks_data
 from src.logger import logger, Timer
-from src.util.jsons import guild_dict_setup, member_dict_setup, player_dict_setup
+from src.util.dicts import guild_dict_setup, member_dict_setup, player_dict_setup
 from src.util.time import string_to_datetime
 
 
@@ -104,7 +105,7 @@ class Toxic(discord.Client):
     async def task_update_stocks(self):
         stocks.update()
 
-    @tasks.loop(seconds=2)
+    @tasks.loop(seconds=10)
     async def task_timer_check(self):
         def check_timer(member_data: dict, key: str):
             return (member_data["timers"][key] and
@@ -135,7 +136,49 @@ class Toxic(discord.Client):
                         if g and user:
                             await g.unban(user)
 
+                    await asyncio.sleep(0.01)
+
+                for giveaway_id, giveaway in guild["data"]["giveaways"].items():
+                    if not giveaway["done"] and string_to_datetime(giveaway["end"]) <= datetime.datetime.now():
+                        channel = self.get_channel(giveaway["channel"])
+                        if channel:
+                            try:
+                                msg = await channel.fetch_message(int(giveaway_id))
+
+                                participants = await msg.reactions[0].users().flatten()
+                                participants.pop(participants.index(self.user))
+                                winners = random.sample(participants, min(giveaway["winners"], len(participants)))
+                                winners_mention = [m.mention for m in winners]
+
+                                embed = discord.Embed(
+                                    title=":tada: Giveaway Ended! :tada:",
+                                    description="CONGRATS to {} for winning **{}**!".format(
+                                        ", and ".join(
+                                            [",".join(winners_mention[:-1]), winners_mention[-1]]
+                                        ) if len(winners_mention) >= 3 else " and ".join(winners_mention),
+                                        giveaway["name"]
+                                    )
+                                )
+
+                                await msg.reply(embed=embed, mention_author=False)
+
+                            except discord.NotFound:
+                                pass
+
+                        guild["data"]["giveaways"][giveaway_id]["done"] = True
+
+                    await asyncio.sleep(0.01)
+
+                # delete giveaways that are done because python won't let me delete keys while
+                # iterating through a dictionary
+                keys = list(guild["data"]["giveaways"].keys())
+                for k in keys:
+                    if k in guild["data"]["giveaways"].keys() and guild["data"]["giveaways"][k]["done"]:
+                        del guild["data"]["giveaways"][k]
+
                 guilds_data.set(guild["_id"], guild)
+
+            await asyncio.sleep(0.08)
 
         for member in game_data.all():
             for effect in member["data"]["effects"]:

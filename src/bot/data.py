@@ -22,8 +22,11 @@ class Data:
         post.update(data)
         self.collection.insert_one(post)
 
+    def delete(self, _id: str or int, data: dict):
+        self.collection.update_one({"_id": str(_id)}, {"$unset": {k: v for k, v in data.items()}})
+
     def all(self):
-        return self.collection.find({})
+        return self.collection.find()
 
 
 guilds_data = Data("guilds")

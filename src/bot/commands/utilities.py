@@ -1,3 +1,4 @@
+import datetime
 import discord
 import asyncio
 
@@ -9,7 +10,8 @@ from src.bot import perms
 
 from src.util.bot import get_infractions, dm_input
 from src.util.parser import parse_int, parse_time, parse_bool, parse_member, parse_channel
-from src.util.time import timestamp, format_time, signature
+from src.util.time import timestamp, format_time, signature, format_timedelta
+from src.util.dicts import giveaway_dict_setup
 
 
 class Utilities(Category):
@@ -205,20 +207,43 @@ class Utilities(Category):
 
                     # get giveaway duration
                     await message.reply("How long will the giveaway last?", mention_author=False)
-                    g_duration = parse_time((await client.wait_for("message", check=check, timeout=30)).content)
-                    if not g_duration:
+                    duration = parse_time((await client.wait_for("message", check=check, timeout=30)).content)
+                    if not duration:
                         await message.reply("Dude give me a valid time (eg 2d12h30m15s).", mention_author=False)
                         return
 
                     # get giveaway channel
-                    await message.reply("Finally, where will the giveaway be? Copy the channel ID and send it here.",
-                                        mention_author=False)
+                    await message.reply("Finally, which channel will the giveaway be hosted in?", mention_author=False)
                     g_channel = parse_channel(
                         message.guild, (await client.wait_for("message", check=check, timeout=30)).content
                     )
                     if not g_channel or type(g_channel) is not discord.TextChannel:
                         await message.reply("Either I can't find the channel, or that channel you gave me "
                                             "isn't a text channel.", mention_author=False)
+
+                    # create giveaway
+                    now = datetime.datetime.now()
+                    embed = discord.Embed(
+                        title="Giveaway: {}".format(g_name),
+                        description="React below to participate!",
+                        color=discord.Color.blurple()
+                    ).add_field(
+                        name="Winners", value="`{}`".format(g_winners), inline=False
+                    ).add_field(
+                        name="Duration", value="`{}`".format(format_timedelta(duration)), inline=False
+                    ).add_field(
+                        name="Ends At", value="`{}`".format(format_time(now + duration)), inline=False
+                    ).set_footer(text=timestamp())
+
+                    g_msg = await g_channel.send(embed=embed)
+                    await g_msg.add_reaction("🎉")
+
+                    guild_data = guilds_data.get(message.guild.id)
+                    giveaways = guild_data["giveaways"]
+                    giveaway_data = giveaway_dict_setup(g_name, now, now + duration, g_winners, g_channel)
+
+                    giveaways[str(g_msg.id)] = giveaway_data
+                    guilds_data.set(message.guild.id, {"data": guild_data})
 
                 except asyncio.TimeoutError:
                     await message.reply("Why bother me when you don't even answer my questions.", mention_author=False)
