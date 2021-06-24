@@ -472,5 +472,56 @@ class Moderation(Category):
 
             await message.reply(embed=embed, mention_author=False)
 
+    class Userinfo(Command):
+        def __init__(self):
+            super().__init__(
+                ["userinfo", "user", "info", "ui"], "userinfo [<user>]",
+                "Displays info of a user or yourself.", perms.EVERYONE
+            )
+
+        async def __call__(self, message, args, client):
+            member = parse_member(message.guild, args[0]) if len(args) > 0 else message.author
+            if not member:
+                await message.reply("That member doesn't even exist what are you doing lmao", mention_author=False)
+                return
+
+            if member.bot:
+                await message.reply("I can't get info of a bot my man.", mention_author=False)
+                return
+
+            embed = self.get_user_info(member, message)
+            await message.reply(embed=embed, mention_author=False)
+
+        @staticmethod
+        def get_user_info(member: discord.Member, message: discord.Message):
+            embed = discord.Embed(
+                color=discord.Color.blue()
+            ).set_author(
+                name="User info of {}".format(member),
+                icon_url=member.avatar_url
+            ).add_field(
+                name="User Name",
+                value="{} ({})".format(member.display_name, member)
+            ).add_field(
+                name="User ID",
+                value=member.id
+            ).add_field(
+                name="Infractions",
+                value=get_infractions(member)[1]["total"]
+            ).add_field(
+                name="Joined Server",
+                value=format_time(member.joined_at)
+            ).add_field(
+                name="Joined Discord",
+                value=format_time(member.created_at)
+            ).add_field(
+                name="Boosting Since",
+                value=format_time(p) if (p := member.premium_since) else "Not Boosting"
+            ).set_footer(
+                text="Requested by {}".format(signature(message.author))
+            )
+
+            return embed
+
 
 handler.add_category(Moderation)

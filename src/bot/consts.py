@@ -36,6 +36,21 @@ search = {
     }
 }
 
+cringe = {
+    "base": "{} at 3am *{}* ({})",
+    "characters": [
+        "Among Us", "Roblox Piggy", "Big Chungus", "Crewmate", "Imposter", "Granny", "Joker",
+        "Tomas The Train", "Jason", "Jeff The Killer", "Freddy", "Chuck E Cheese", "Jester"
+    ],
+    "verbs": [
+        "Call*ing {}", "Video Call*ing with {}", "Text*ing {}", "Drink*ing {} Potion"
+    ],
+    "endings": ["he actually came", "he came to my house", "he tried to take me",
+                "I turned into {}", "I became {}", "he broke into my house"],
+    "extras": ["help", "help me", "call 911", "dangerous", "the FBI came", "challenge",
+               "pls sub", "giveaway in the description", "real", "scary"]
+}
+
 cooldown = [
     "Ayo stop spamming",
     "Stop it man",

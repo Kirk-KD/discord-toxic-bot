@@ -1,5 +1,8 @@
+import discord
+
 from src.bot.category import Category
 from src.bot.command import Command
+from src.bot.consts import cringe
 from src.bot.handler import handler
 from src.bot import perms
 
@@ -78,6 +81,36 @@ class Fun(Category):
 
             res = random.choice(results)
             await message.reply("https://youtube.com{}".format(res["url_suffix"]), mention_author=False)
+
+    class Cringe(Command):
+        def __init__(self):
+            super().__init__(
+                ["cringe"], "cringe", "Generate a cringe youtube video title.", perms.EVERYONE
+            )
+
+        async def __call__(self, message, args, client):
+            character = random.choice(cringe["characters"])
+            character += ".exe" if random.random() <= 0.3 else ""
+
+            verb = random.choice(cringe["verbs"]).format(character)
+            verb = verb.replace("*", "") if random.random() <= 0.5 else ("Do not " + verb.replace("*ing", ""))
+
+            ending = random.choice(cringe["endings"])
+            if "{" in ending:
+                ending = ending.format(character.replace(".exe", ""))
+
+            extra = random.choice(cringe["extras"])
+
+            res = cringe["base"].format(verb, ("OMG " if random.random() <= 0.5 else "") + ending, extra)
+            if random.random() <= 0.5:
+                res = res.upper()
+
+            embed = discord.Embed(
+                title="Here's your premium cringe",
+                description="\"{}\"".format(res.replace("*", "\\*")),
+                color=discord.Color.blurple()
+            )
+            await message.reply(embed=embed, mention_author=False)
 
 
 handler.add_category(Fun)
