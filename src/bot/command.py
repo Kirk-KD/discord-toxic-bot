@@ -42,7 +42,7 @@ class GameCommand(Command):
         self.users = {}
 
     async def check_cooldown(self, message):
-        if perm_check(message.author, GLOBAL_DEV):  # dev bypass cooldown
+        if await perm_check(message.author, GLOBAL_DEV):  # dev bypass cooldown
             return True
         self.users[message.author.id] = (self.users[message.author.id]
                                          if message.author.id in self.users.keys()
@@ -62,6 +62,14 @@ class GameCommand(Command):
             )
             await message.reply(embed=embed, mention_author=False)
             return False
+
+    async def __call__(self, message, args, client):
+        raise NotImplementedError()
+
+
+class DevCommand(Command):
+    def __init__(self, triggers: list):
+        super().__init__(triggers, "[omitted]", "[omitted]", perms.GLOBAL_DEV)
 
     async def __call__(self, message, args, client):
         raise NotImplementedError()

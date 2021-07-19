@@ -95,9 +95,6 @@ class Shop:
             await message.reply("Who do you want to curse (30% chance of backfiring)?", mention_author=False)
 
             try:
-                def check(msg: discord.Message):
-                    print(msg.author == message.author)
-                    return msg.author == message.author
                 input_msg = await client.wait_for("message",
                                                   check=lambda m: (m.author == message.author and
                                                                    m.channel == message.channel),
@@ -109,7 +106,7 @@ class Shop:
             if not member:
                 return "Lol that user doesn't exist. You just wasted a seal."
 
-            target = manager.get_player(member)
+            target = await manager.get_player(member)
             amount = -random.randint(10, 30)
             e = effect.Effect(30 * 60, {"multi": amount})
 
@@ -146,7 +143,7 @@ class Shop:
         async def use(self, player, message, client):
             gain = random.randint(500, 10000)
             player.data["bank"]["max"] += gain
-            player.update_data()
+            await player.update_data()
 
             return "You used your bank token, and the bank gave you **txc${}** more bank space!".format(gain)
 

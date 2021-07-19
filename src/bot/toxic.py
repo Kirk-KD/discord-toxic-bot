@@ -11,6 +11,7 @@ from src.bot.data import guilds_data, game_data, stocks_data
 from src.logger import logger, Timer
 from src.util.dicts import guild_dict_setup, member_dict_setup, player_dict_setup
 from src.util.time import string_to_datetime
+from src.bot.consts import big_num
 
 
 class Toxic(discord.Client):
@@ -26,8 +27,8 @@ class Toxic(discord.Client):
         logger.info("INITIALISING DATABASE...")
 
         timer = Timer()
-        self.init_guilds()
-        self.init_stocks()
+        await self.init_guilds()
+        await self.init_stocks()
         logger.timed(timer, "DB Initialization")
 
     async def on_ready(self):
@@ -46,33 +47,33 @@ class Toxic(discord.Client):
         logger.info("CLIENT LOGIN")
 
     async def on_guild_join(self, guild: discord.Guild):
-        if not guilds_data.get(guild.id):
-            guilds_data.add(guild.id, {"data": guild_dict_setup(guild)})
+        if not await guilds_data.get(guild.id):
+            await guilds_data.add(guild.id, {"data": guild_dict_setup(guild)})
 
         for member in guild.members:
             if member.bot:
                 continue
 
-            g_data = guilds_data.get(guild.id)
+            g_data = await guilds_data.get(guild.id)
             if str(member.id) not in g_data["members"].keys():
                 g_data["members"][str(member.id)] = member_dict_setup()
-            guilds_data.set(guild.id, {"data": g_data})
+            await guilds_data.set(guild.id, {"data": g_data})
 
-            if not game_data.get(member.id):
-                game_data.add(member.id, {"data": player_dict_setup()})
+            if not await game_data.get(member.id):
+                await game_data.add(member.id, {"data": await player_dict_setup()})
 
     async def on_member_join(self, member: discord.Member):
         if member.bot:
             return
 
         guild = member.guild
-        g_data = guilds_data.get(guild.id)
+        g_data = await guilds_data.get(guild.id)
         if str(member.id) not in g_data["members"].keys():
             g_data["members"][str(member.id)] = member_dict_setup()
-        guilds_data.set(guild.id, {"data": g_data})
+        await guilds_data.set(guild.id, {"data": g_data})
 
-        if not game_data.get(member.id):
-            game_data.add(member.id, {"data": player_dict_setup()})
+        if not await game_data.get(member.id):
+            await game_data.add(member.id, {"data": await player_dict_setup()})
 
     async def on_message(self, message: discord.Message):
         if message.author.bot or not isinstance(message.channel, discord.TextChannel) or not self.is_ready():
@@ -103,15 +104,15 @@ class Toxic(discord.Client):
     # tasks
     @tasks.loop(hours=1)
     async def task_update_stocks(self):
-        stocks.update()
+        await stocks.update()
 
-    @tasks.loop(seconds=10)
+    @tasks.loop(seconds=2)
     async def task_timer_check(self):
         def check_timer(member_data: dict, key: str):
             return (member_data["timers"][key] and
                     string_to_datetime(member_data["timers"][key]) <= datetime.datetime.now())
 
-        for guild in guilds_data.all():
+        for guild in await guilds_data.all():
             if guild["data"]["initialised"]:
                 for member_id, member in guild["data"]["members"].items():
                     if member["muted"] and check_timer(member, "mute"):
@@ -176,48 +177,48 @@ class Toxic(discord.Client):
                     if k in guild["data"]["giveaways"].keys() and guild["data"]["giveaways"][k]["done"]:
                         del guild["data"]["giveaways"][k]
 
-                guilds_data.set(guild["_id"], guild)
+                await guilds_data.set(guild["_id"], guild)
 
             await asyncio.sleep(0.08)
 
-        for member in game_data.all():
+        for member in await game_data.all():
             for effect in member["data"]["effects"]:
                 if effect["end_time"] and string_to_datetime(effect["end_time"]) <= datetime.datetime.now():
                     member["data"]["effects"].remove(effect)
-                    game_data.set(member["_id"], member)
+                    await game_data.set(member["_id"], member)
 
-    @tasks.loop(seconds=30)
+    @tasks.loop(seconds=15)
     async def task_streak_check(self):
-        for player in game_data.all():
+        for player in await game_data.all():
             d = player["data"]
 
             if (t := d["timers"]["streak"]) is not None and string_to_datetime(t) <= datetime.datetime.now():
                 d["timers"]["streak"] = None
-                game_data.set(player["_id"], {"data": d})
+                await game_data.set(player["_id"], {"data": d})
 
     # helpers
-    def init_guilds(self):
+    async def init_guilds(self):
         for guild in self.guilds:
-            if not guilds_data.get(guild.id):
-                guilds_data.add(guild.id, {"data": guild_dict_setup(guild)})
+            if not guilds_data.get_non_async(guild.id):
+                guilds_data.add_non_async(guild.id, {"data": guild_dict_setup(guild)})
 
             for member in guild.members:
                 if member.bot:
                     continue
 
-                g_data = guilds_data.get(guild.id)
+                g_data = guilds_data.get_non_async(guild.id)
                 if str(member.id) not in g_data["members"].keys():
                     g_data["members"][str(member.id)] = member_dict_setup()
-                guilds_data.set(guild.id, {"data": g_data})
+                guilds_data.set_non_async(guild.id, {"data": g_data})
 
-                if not game_data.get(member.id):
-                    game_data.add(member.id, {"data": player_dict_setup()})
+                if not game_data.get_non_async(member.id):
+                    game_data.add_non_async(member.id, {"data": await player_dict_setup()})
 
-    def init_stocks(self):
-        if stocks_data.all().count() == 0:
+    async def init_stocks(self):
+        if stocks_data.all_non_async().count() == 0:
             stock_names = ["Toxic", "Acid", "xD Coffee", "Roll of Rick", "Guthib Dog"]
             for name in stock_names:
-                if not stocks_data.get(name):
-                    stocks_data.add(name, {"data": []})
+                if not stocks_data.get_non_async(name,):
+                    stocks_data.add_non_async(name, {"data": []})
 
-            stocks.update()
+            await stocks.update()

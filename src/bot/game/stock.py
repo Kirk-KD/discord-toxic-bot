@@ -15,12 +15,12 @@ class Stock:
         self.record = [self.gbm() for _ in range(self.max_record)] if len(record) == 0 else record.copy()
         self.current = self.record[-1]
 
-    def update(self):
+    async def update(self):
         self.record.append(self.gbm())
         if len(self.record) > self.max_record:
             self.record.pop(0)
 
-        stocks_data.set(self.name, {"data": self.record})
+        await stocks_data.set(self.name, {"data": self.record})
 
     def get_graph(self):
         marker_type = ("->" if self.record[-1] == self.record[-2] else

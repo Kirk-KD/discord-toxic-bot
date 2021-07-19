@@ -8,7 +8,7 @@ import os
 from src.bot.data import guilds_data
 
 
-def perm_check(member: discord.Member, perm: int):
+async def perm_check(member: discord.Member, perm: int):
     """
     checks permissions of member:
     EVERYONE = 0
@@ -32,16 +32,17 @@ def perm_check(member: discord.Member, perm: int):
         if str(member.id) == os.getenv("DEV") and str(member.guild.id) == os.getenv("DEV_SERVER"):
             return True
 
+    perm_ids = (await guilds_data.get(member.guild.id))["settings"]["perm_ids"]
     if perm <= 2:  # owners
         if member.id == member.guild.owner_id:
             return True
         for role in member.roles:
-            if role.id in guilds_data.get(member.guild.id)["settings"]["perm_ids"]["owner"]:
+            if role.id in perm_ids["owner"]:
                 return True
 
     if perm <= 1:  # moderators
         for role in member.roles:
-            if role.id in guilds_data.get(member.guild.id)["settings"]["perm_ids"]["mod"]:
+            if role.id in perm_ids["mod"]:
                 return True
 
     return False

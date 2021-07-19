@@ -33,14 +33,14 @@ class Game(Category):
             if not await self.check_cooldown(message):
                 return
 
-            player = manager.get_player(message.author)
+            player = await manager.get_player(message.author)
 
             if chance(70):
                 amount = multiplier(int(random.triangular(15, 500, 75)), player.data["stats"]["multi"])
                 player.data["stats"]["txc"] += amount
                 await player.gain_exp()
 
-                player.update_data()
+                await player.update_data()
 
                 embed = discord.Embed(
                     title="Got 'em",
@@ -72,7 +72,7 @@ class Game(Category):
             if not await self.check_cooldown(message):
                 return
 
-            player = manager.get_player(message.author)
+            player = await manager.get_player(message.author)
 
             indexes = random.sample(range(len(roast["chances"])), 3)
             options = [roast["characters"][i] for i in indexes]
@@ -110,7 +110,7 @@ class Game(Category):
                         player.data["stats"]["txc"] += amount
                         await player.gain_exp()
 
-                        player.update_data()
+                        await player.update_data()
 
                         embed = discord.Embed(
                             title="Ez",
@@ -139,7 +139,7 @@ class Game(Category):
             if not await self.check_cooldown(message):
                 return
 
-            player = manager.get_player(message.author)
+            player = await manager.get_player(message.author)
             if chance(75):
                 if chance(7):
                     amount = random.choices([1, 2, 3], [0.92, 0.06, 0.02])
@@ -190,7 +190,7 @@ class Game(Category):
                     )
                     await message.reply(embed=embed, mention_author=False)
 
-            player.update_data()
+            await player.update_data()
 
     class Balance(GameCommand):
         def __init__(self):
@@ -207,7 +207,7 @@ class Game(Category):
                 await message.reply("That user doesn't exist lol", mention_author=False)
                 return
 
-            player = manager.get_player(member)
+            player = await manager.get_player(member)
             embed = discord.Embed(
                 title="{}'s Balance :moneybag:".format(member),
                 color=discord.Color.gold()
@@ -245,7 +245,7 @@ class Game(Category):
                 await message.reply("You can't deposit nothing, stop trying to break me.", mention_author=False)
                 return
 
-            player = manager.get_player(message.author)
+            player = await manager.get_player(message.author)
 
             if player.data["stats"]["txc"] == 0:
                 await message.reply("Lol your wallet is as empty as your head.", mention_author=False)
@@ -264,7 +264,7 @@ class Game(Category):
             player.data["bank"]["curr"] += amount
             player.data["stats"]["txc"] -= amount
 
-            player.update_data()
+            await player.update_data()
 
             await message.reply("Alright, **txc${}** deposited safely into the bank.".format(amount),
                                 mention_author=False)
@@ -287,7 +287,7 @@ class Game(Category):
                 await message.reply("You can't withdraw nothing, stop trying to break me.", mention_author=False)
                 return
 
-            player = manager.get_player(message.author)
+            player = await manager.get_player(message.author)
 
             amount = min([
                 player.data["bank"]["curr"],
@@ -296,7 +296,7 @@ class Game(Category):
 
             player.data["stats"]["txc"] += amount
             player.data["bank"]["curr"] -= amount
-            player.update_data()
+            await player.update_data()
 
             await message.reply("Alright, **txc${}** withdrawn from the bank.".format(amount),
                                 mention_author=False)
@@ -318,7 +318,7 @@ class Game(Category):
                 await message.reply("How much money or items do you want to give them lol.", mention_author=False)
                 return
 
-            player = manager.get_player(message.author)
+            player = await manager.get_player(message.author)
             target_member = parse_member(message.guild, args[0])
             amount = parse_int(args[-1])
             autofill_amount = False
@@ -336,7 +336,7 @@ class Game(Category):
                     await message.reply("Um I think I need a valid number, maybe???", mention_author=False)
                     return
 
-            target = manager.get_player(target_member)
+            target = await manager.get_player(target_member)
             if not target:
                 await message.reply("Dummy you can't give your stuff to bots.", mention_author=False)
                 return
@@ -389,7 +389,7 @@ class Game(Category):
                     color=discord.Color.green()
                 )
 
-            player.update_data()
+            await player.update_data()
             await message.reply(embed=embed, mention_author=False)
 
     # item
@@ -459,7 +459,7 @@ class Game(Category):
                 await message.reply("That user doesn't exist lol", mention_author=False)
                 return
 
-            player = manager.get_player(member)
+            player = await manager.get_player(member)
 
             embed = discord.Embed(
                 title="{}'s Inventory :file_folder:".format(member),
@@ -486,7 +486,7 @@ class Game(Category):
                 await message.reply("Lmao you need to tell me what item you want to use.", mention_author=False)
                 return
 
-            player = manager.get_player(message.author)
+            player = await manager.get_player(message.author)
             item = shop.get_item(args[0])
             if not item:
                 await message.reply("Dude that item doesn't even exist what are you doing lol.", mention_author=False)
@@ -502,7 +502,7 @@ class Game(Category):
 
             player.remove_item(item)
             response = await item.use(player, message, client)
-            player.update_data()
+            await player.update_data()
 
             if response:
                 if type(response) is discord.Embed:
@@ -537,14 +537,14 @@ class Game(Category):
                 return
 
             price = amount * item.price
-            player = manager.get_player(message.author)
+            player = await manager.get_player(message.author)
             if player.data["stats"]["txc"] < price:
                 await message.reply("Well that sucks, you are poor and you can't afford it LMAO", mention_author=False)
                 return
 
             player.data["stats"]["txc"] -= price
             player.give_item(item, amount)
-            player.update_data()
+            await player.update_data()
 
             embed = discord.Embed(
                 title="Successful Purchase",
@@ -583,7 +583,7 @@ class Game(Category):
                 await message.reply("Lol the shop doesn't even want that.", mention_author=False)
                 return
 
-            player = manager.get_player(message.author)
+            player = await manager.get_player(message.author)
             if player.count_item(item) < amount:
                 await message.reply("Lol you don't even have enough, stop humiliating yourself.", mention_author=False)
                 return
@@ -591,7 +591,7 @@ class Game(Category):
             txc_gain = player.multiplier(item.price // 10 * amount)
             player.remove_item(item, amount)
             player.data["stats"]["txc"] += txc_gain
-            player.update_data()
+            await player.update_data()
 
             embed = discord.Embed(
                 title="Successful Sale",
@@ -616,7 +616,7 @@ class Game(Category):
             if not member:
                 await message.reply("That user doesn't exist lol", mention_author=False)
 
-            player = manager.get_player(member)
+            player = await manager.get_player(member)
             tot_exp = player.data["stats"]["exp"]
             exp = tot_exp % 100
 
@@ -658,10 +658,11 @@ class Game(Category):
             if not await self.check_cooldown(message):
                 return
 
-            members_sorted = sorted(
-                [member for member in message.guild.members if not member.bot],
-                key=lambda m: manager.get_player(m).data["stats"]["txc"], reverse=True
-            )
+            author_player = await manager.get_player(message.author)
+
+            players = [(await manager.get_player(m)) for m in message.guild.members if not m.bot and m != message.author]
+            players.append(author_player)
+            players_sorted = sorted(players, key=lambda player: player.data["stats"]["txc"], reverse=True)
 
             e = ":first_place: :second_place: :third_place:".split()
             embed = discord.Embed(
@@ -669,11 +670,13 @@ class Game(Category):
                 description="",
                 color=discord.Color.gold()
             ).set_footer(
-                text="You are at {} place\n\n".format(parse_place(members_sorted.index(message.author) + 1))
+                text="You are at {} place\n\n".format(
+                    parse_place(players_sorted.index(author_player) + 1)
+                )
             )
-            for i, p in enumerate(members_sorted):
+            for i, p in enumerate(players_sorted):
                 embed.description += "{} **{}** - {}\n".format(
-                    e[i] if i < 3 else ":small_orange_diamond:", manager.get_player(p).data["stats"]["txc"], p
+                    e[i] if i < 3 else ":small_orange_diamond:", p.data["stats"]["txc"], p.member
                 )
                 if i == 9:
                     break
@@ -698,7 +701,7 @@ class Game(Category):
                 await message.reply("You can't bet nothing idiot.", mention_author=False)
                 return
 
-            player = manager.get_player(message.author)
+            player = await manager.get_player(message.author)
 
             if player.data["stats"]["txc"] == 0:
                 await message.reply("Lol your wallet is as empty as your head.", mention_author=False)
@@ -742,7 +745,7 @@ class Game(Category):
 
                 player.data["stats"]["txc"] -= amount
 
-            player.update_data()
+            await player.update_data()
             await message.reply(embed=embed, mention_author=False)
 
     class Stocks(GameCommand):
@@ -755,7 +758,7 @@ class Game(Category):
             if not await self.check_cooldown(message):
                 return
 
-            player = manager.get_player(message.author)
+            player = await manager.get_player(message.author)
 
             if len(args) == 0:
                 embed = discord.Embed(
@@ -766,8 +769,8 @@ class Game(Category):
                     color=discord.Color.blue()
                 )
 
-                for s in stocks.all():
-                    stock = stocks.get_stock(s["_id"])
+                for s in await stocks.all():
+                    stock = await stocks.get_stock(s["_id"])
                     embed.add_field(
                         name=s["_id"] + " `{} owned`".format(player.data["stocks"][stock.name]),
                         value="**txc${}**".format(stock.current) + (
@@ -784,7 +787,7 @@ class Game(Category):
                         await message.reply("Which stock do you want to see dummy?", mention_author=False)
                         return
 
-                    stock = stocks.get_stock(" ".join(args[1:]))
+                    stock = await stocks.get_stock(" ".join(args[1:]))
                     if not stock:
                         await message.reply("That stock literally doesn't exist.", mention_author=False)
                         return
@@ -815,7 +818,7 @@ class Game(Category):
                         await message.reply("Which stock do you want to buy idiot.", mention_author=False)
                         return
 
-                    stock = stocks.get_stock(" ".join(args[2:]))
+                    stock = await stocks.get_stock(" ".join(args[2:]))
                     if not stock:
                         await message.reply("Invalid stock name lel.", mention_author=False)
                         return
@@ -827,7 +830,7 @@ class Game(Category):
 
                     player.data["stats"]["txc"] -= price
                     player.data["stocks"][stock.name] += amount
-                    player.update_data()
+                    await player.update_data()
 
                     embed = discord.Embed(
                         title=":chart_with_downwards_trend: Stock Purchase :chart_with_upwards_trend:",
@@ -855,7 +858,7 @@ class Game(Category):
                         await message.reply("Which stock do you want to sell idiot.", mention_author=False)
                         return
 
-                    stock = stocks.get_stock(" ".join(args[2:]))
+                    stock = await stocks.get_stock(" ".join(args[2:]))
                     if not stock:
                         await message.reply("Invalid stock name lel.", mention_author=False)
                         return
@@ -866,7 +869,7 @@ class Game(Category):
 
                     player.data["stocks"][stock.name] -= amount
                     player.data["stats"]["txc"] += max(stock.current * amount, 1)
-                    player.update_data()
+                    await player.update_data()
 
                     embed = discord.Embed(
                         title=":chart_with_downwards_trend: Stock Trade :chart_with_upwards_trend:",
@@ -886,7 +889,7 @@ class Game(Category):
             if not await self.check_cooldown(message):
                 return
 
-            player = manager.get_player(message.author)
+            player = await manager.get_player(message.author)
 
             if player.data["timers"]["streak"] is not None:
                 await message.reply(
@@ -909,7 +912,7 @@ class Game(Category):
             player.data["stats"]["txc"] += txc
             [player.give_item(shop.get_item(name)) for name in items] if give_items else None
 
-            player.update_data()
+            await player.update_data()
 
             embed = discord.Embed(
                 title="{}'s Daily Prize :hourglass:".format(message.author),

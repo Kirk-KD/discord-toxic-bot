@@ -1,14 +1,17 @@
 import discord
 
-from src.bot.game import player
+from src.bot.game.player import Player
 
 
 class GameManager:
     def __init__(self):
         pass
 
-    def get_player(self, member: discord.Member):
-        return player.Player(member)
+    async def get_player(self, member: discord.Member):
+        p = Player(member)
+        await p.set_data()
+
+        return p
 
 
 manager = GameManager()

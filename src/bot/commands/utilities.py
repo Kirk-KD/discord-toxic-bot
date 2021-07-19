@@ -187,12 +187,12 @@ class Utilities(Category):
                     g_msg = await g_channel.send(embed=embed)
                     await g_msg.add_reaction("🎉")
 
-                    guild_data = guilds_data.get(message.guild.id)
+                    guild_data = await guilds_data.get(message.guild.id)
                     giveaways = guild_data["giveaways"]
                     giveaway_data = giveaway_dict_setup(g_name, now, now + duration, g_winners, g_channel)
 
                     giveaways[str(g_msg.id)] = giveaway_data
-                    guilds_data.set(message.guild.id, {"data": guild_data})
+                    await guilds_data.set(message.guild.id, {"data": guild_data})
 
                 except asyncio.TimeoutError:
                     await message.reply("Why bother me when you don't even answer my questions.", mention_author=False)
@@ -241,7 +241,7 @@ class Utilities(Category):
 
                 return True
 
-            if guilds_data.get(message.guild.id)["initialised"]:
+            if await guilds_data.get(message.guild.id)["initialised"]:
                 await message.reply(
                     ("yo your server was already initialised lol. "
                      "Do you wish to redo setup? Reply `yes` in 10 seconds if you do."), mention_author=False
@@ -257,11 +257,11 @@ class Utilities(Category):
                         return
                     else:
                         # initialise settings
-                        guild_data = guilds_data.get(message.guild.id)
+                        guild_data = await guilds_data.get(message.guild.id)
                         guild_data["settings"]["perm_ids"]["owner"] = \
                             guild_data["settings"]["perm_ids"]["mod"] = []
                         guild_data["initialised"] = False
-                        guilds_data.set(message.guild.id, {"data": guild_data})
+                        await guilds_data.set(message.guild.id, {"data": guild_data})
 
                 except asyncio.exceptions.TimeoutError:
                     await message.channel.send("Setup redo canceled.")
@@ -304,11 +304,11 @@ class Utilities(Category):
             if not await get_user_input(guild_roles, mod_roles, embed):
                 return
 
-            guild_data = guilds_data.get(message.guild.id)
+            guild_data = await guilds_data.get(message.guild.id)
             guild_data["settings"]["perm_ids"]["owner"] = owner_roles
             guild_data["settings"]["perm_ids"]["mod"] = mod_roles
             guild_data["initialised"] = True
-            guilds_data.set(message.guild.id, {"data": guild_data})
+            await guilds_data.set(message.guild.id, {"data": guild_data})
 
             embed = discord.Embed(
                 title="Toxic bot setup complete!",

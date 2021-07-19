@@ -25,7 +25,7 @@ async def dm_input(init_msg: discord.Message, prompt: discord.Embed or str, clie
     return user_input.content
 
 
-def get_infractions(member: discord.Member):
+async def get_infractions(member: discord.Member):
     """
     gets a member's infractions.
 
@@ -33,7 +33,7 @@ def get_infractions(member: discord.Member):
     :return: tuple[str, dict]
     """
 
-    infractions = guilds_data.get(member.guild.id)["members"][str(member.id)]["infractions"][::-1]
+    infractions = (await guilds_data.get(member.guild.id))["members"][str(member.id)]["infractions"][::-1]
     counter = {
         "mute": 0,
         "warn": 0,

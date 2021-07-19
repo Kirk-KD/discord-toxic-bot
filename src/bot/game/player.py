@@ -8,9 +8,19 @@ from src.bot.game import item
 class Player:
     def __init__(self, member: discord.Member):
         self.member = member
-        self.data = game_data.get(self.member.id)
+        self.data = None
 
-    def has_item(self, item_: item.Item):
+    async def set_data(self):
+        """
+        because async/await is not allowed for __init__, we need to call this
+        method in the get_player method of GameManager.
+
+        :return: None
+        """
+
+        self.data = await game_data.get(self.member.id)
+
+    async def has_item(self, item_: item.Item):
         """
         returns whether or not the player has an item.
 
@@ -114,5 +124,5 @@ class Player:
     def multiplier(self, amount: int):
         return round(amount + round(amount * (self.data["stats"]["multi"] / 100)))
 
-    def update_data(self):
-        game_data.set(self.member.id, {"data": self.data})
+    async def update_data(self):
+        await game_data.set(self.member.id, {"data": self.data})

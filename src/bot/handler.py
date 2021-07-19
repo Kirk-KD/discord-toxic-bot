@@ -16,7 +16,7 @@ class Handler:
         args = msg.split()
         name = args.pop(0).lower()
 
-        if not guilds_data.get(message.guild.id)["initialised"] and name != "setup":
+        if not (await guilds_data.get(message.guild.id))["initialised"] and name != "setup":
             await message.reply(
                 "Hey tell your server owner to do a `_setup` first, then you can order me around!",
                 mention_author=False
@@ -24,7 +24,7 @@ class Handler:
             return
 
         if command := self.get_command(name):
-            if perm_check(message.author, command.perm):
+            if await perm_check(message.author, command.perm):
                 try:
                     await command(message, args, client)
                 except discord.Forbidden:

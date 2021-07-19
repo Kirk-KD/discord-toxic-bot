@@ -62,7 +62,7 @@ class Moderation(Category):
 
             await member.add_roles(muted_role)
 
-            guild_data = guilds_data.get(message.guild.id)
+            guild_data = await guilds_data.get(message.guild.id)
             member_data = guild_data["members"][str(member.id)]
 
             member_data["infractions"].append(
@@ -73,7 +73,7 @@ class Moderation(Category):
                  if args[1].lower() != "forever" else None)
             member_data["muted"] = True
 
-            guilds_data.set(message.guild.id, {"data": guild_data})
+            await guilds_data.set(message.guild.id, {"data": guild_data})
 
             embed = discord.Embed(
                 title="Mute",
@@ -137,10 +137,10 @@ class Moderation(Category):
                 return
 
             await member.remove_roles(muted_role)
-            guild_data = guilds_data.get(message.guild.id)
+            guild_data = await guilds_data.get(message.guild.id)
             guild_data["members"][str(member.id)]["muted"] = False
             guild_data["members"][str(member.id)]["timers"]["mute"] = None
-            guilds_data.set(member.guild.id, {"data": guild_data})
+            await guilds_data.set(member.guild.id, {"data": guild_data})
 
             embed = discord.Embed(
                 title="Unmute",
@@ -181,11 +181,11 @@ class Moderation(Category):
                 return
 
             # add infraction
-            guild_data = guilds_data.get(message.guild.id)
+            guild_data = await guilds_data.get(message.guild.id)
             guild_data["members"][str(warn_member.id)]["infractions"].append(
                 infraction_dict_setup("Warn", warn_reason, datetime.datetime.now())
             )
-            guilds_data.set(message.guild.id, {"data": guild_data})
+            await guilds_data.set(message.guild.id, {"data": guild_data})
 
             embed_msg = discord.Embed(
                 title="Warn",
@@ -236,11 +236,11 @@ class Moderation(Category):
             await kick_member.kick(reason=kick_reason)
 
             # add infraction
-            guild_data = guilds_data.get(message.guild.id)
+            guild_data = await guilds_data.get(message.guild.id)
             guild_data["members"][str(kick_member.id)]["infractions"].append(
                 infraction_dict_setup("Kick", kick_reason, datetime.datetime.now())
             )
-            guilds_data.set(message.guild.id, {"data": guild_data})
+            await guilds_data.set(message.guild.id, {"data": guild_data})
 
             embed = discord.Embed(
                 title="Kick",
@@ -313,7 +313,7 @@ class Moderation(Category):
                 await message.reply("Invalid time.", mention_author=False)
                 return
 
-            guild_data = guilds_data.get(message.guild.id)
+            guild_data = await guilds_data.get(message.guild.id)
             member_data = guild_data["members"][str(member.id)]
 
             member_data["infractions"].append(
@@ -328,7 +328,7 @@ class Moderation(Category):
                 member_data["timers"]["ban"] = str(datetime.datetime.now() +
                                                    datetime.timedelta(0, time.total_seconds()))
 
-            guilds_data.set(message.guild.id, {"data": guild_data})
+            await guilds_data.set(message.guild.id, {"data": guild_data})
             await member.ban(reason=reason)
 
             # reply
@@ -398,18 +398,18 @@ class Moderation(Category):
                 await message.reply("That member doesn't even exist lol.", mention_author=False)
                 return
 
-            if (str(member.id) not in (members := guilds_data.get(message.guild.id)["members"]).keys() or
+            if (str(member.id) not in (members := await guilds_data.get(message.guild.id)["members"]).keys() or
                     not members[str(member.id)]["banned"]):
                 await message.reply("Sure. If you can teach me how to unban someone that isn't banned.",
                                     mention_author=False)
                 return
 
-            guild_data = guilds_data.get(message.guild.id)
+            guild_data = await guilds_data.get(message.guild.id)
             member_data = guild_data["members"][str(member.id)]
 
             member_data["banned"] = False
             member_data["timers"]["ban"] = None
-            guilds_data.set(message.guild.id, {"data": guild_data})
+            await guilds_data.set(message.guild.id, {"data": guild_data})
 
             await message.guild.unban(member)
 
@@ -440,7 +440,7 @@ class Moderation(Category):
                 await message.reply("That is not a valid member my man.", mention_author=False)
                 return
 
-            inf_msg, counter = get_infractions(member)
+            inf_msg, counter = await get_infractions(member)
             embed = discord.Embed(
                 color=discord.Color.blue()
             ).set_author(
@@ -489,11 +489,11 @@ class Moderation(Category):
                 await message.reply("I can't get info of a bot my man.", mention_author=False)
                 return
 
-            embed = self.get_user_info(member, message)
+            embed = await self.get_user_info(member, message)
             await message.reply(embed=embed, mention_author=False)
 
         @staticmethod
-        def get_user_info(member: discord.Member, message: discord.Message):
+        async def get_user_info(member: discord.Member, message: discord.Message):
             embed = discord.Embed(
                 color=discord.Color.blue()
             ).set_author(
@@ -507,7 +507,7 @@ class Moderation(Category):
                 value=member.id
             ).add_field(
                 name="Infractions",
-                value=get_infractions(member)[1]["total"]
+                value=(await get_infractions(member))[1]["total"]
             ).add_field(
                 name="Joined Server",
                 value=format_time(member.joined_at)

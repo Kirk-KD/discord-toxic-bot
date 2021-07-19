@@ -51,7 +51,7 @@ def infraction_dict_setup(action: str, reason: str, time: datetime.datetime):
     }
 
 
-def player_dict_setup():
+async def player_dict_setup():
     return {
         "stats": {
             "txc": 1000,
@@ -68,7 +68,7 @@ def player_dict_setup():
         },
         "inv": {},
         "effects": [],
-        "stocks": {s["_id"]: 0 for s in stocks_data.all()}
+        "stocks": {s["_id"]: 0 for s in await stocks_data.all()}
     }
 
 

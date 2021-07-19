@@ -1,3 +1,5 @@
+big_num = 99999999999999999
+
 beg = {
     "characters": [
         "The developer", "Toxic xD", "Trump", "Pewdiepie", "Brackeys", "Tim from twt",
